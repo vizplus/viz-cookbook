@@ -5,4 +5,4 @@ Viz Cookbook provide to developers API/object/structures descriptions, code exam
 ***
 
 Choose language:
-* Russian: [Поваренная книга VIZ на русском](ru/Contents.md)
+* Russian: [Поваренная книга VIZ на русском](Ru-Contents)
