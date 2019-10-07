@@ -7,7 +7,6 @@
 Содержение:
 * [Основные понятия](Ru-Basic-concept)
 * [Экономика](Ru-Economy)
-* [Циркуляция ценности](Ru-Value-circulation)
 * [Типы нод](Ru-Node-types)
 * [Операции и их типы](Ru-Operations)
 * [Объекты и структуры в VIZ](Ru-Object-structures)
