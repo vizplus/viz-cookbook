@@ -87,11 +87,78 @@ rpc-endpoint = 0.0.0.0:8081
 
 ## account_by_key
 
- - get_key_references
+ - get_key_references — возвращает массив логинов аккаунтов, которые содержат указанный публичный ключ.
+
+Пример запроса:
+```json
+{"id":1,"method":"call","jsonrpc":"2.0","params":["account_by_key","get_key_references",[["VIZ5Z2po7K5CoCXw2xLPPt8JJvJLJ3xVNANLgTy9KDfLeZH2urSSd","VIZ1111111111111111111111111111111114T1Anm"]]]}
+```
+Ответ:
+```
+[
+  [
+    "on1x"
+  ],
+  [
+    "viz"
+  ]
+]
+```
 
 ## account_history
 
- - get_account_history
+ - get_account_history — возвращает историю операций (в том числе и виртуальных), связанных с определенным аккаунтом. В конфигурационном файле может быть многократно указан `track-account-range` в виде json строки: `["from","to"]`.
+
+Пример запроса:
+```
+{"id":1,"method":"call","jsonrpc":"2.0","params":["account_history","get_account_history",["on1x","-1","5"]]}
+```
+Ответ:
+```json
+[
+  [
+    3057,
+    {
+      "trx_id": "d5f53163bc237b17c8fd6f3278d3ca1b4ae21691",
+      "block": 10913871,
+      "trx_in_block": 0,
+      "op_in_trx": 0,
+      "virtual_op": 0,
+      "timestamp": "2019-10-14T07:01:18",
+      "op": [
+        "transfer",
+        {
+          "from": "viz-social-bot",
+          "to": "on1x",
+          "amount": "7.725 VIZ",
+          "memo": "withdraw:3353"
+        }
+      ]
+    }
+  ],
+  [
+    3058,
+    {
+      "trx_id": "ac8c4c225334dc59ec604dfa3d56b55dfc0647d3",
+      "block": 10916119,
+      "trx_in_block": 0,
+      "op_in_trx": 0,
+      "virtual_op": 1,
+      "timestamp": "2019-10-14T08:53:42",
+      "op": [
+        "receive_award",
+        {
+          "initiator": "dignity",
+          "receiver": "on1x",
+          "custom_sequence": 0,
+          "memo": "telegram:151842302",
+          "shares": "58.246984 SHARES"
+        }
+      ]
+    }
+  ]
+]
+```
 
 ## committee_api
  - get_committee_request
