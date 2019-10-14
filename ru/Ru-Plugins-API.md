@@ -189,5 +189,70 @@ rpc-endpoint = 0.0.0.0:8081
  - get_witness_count
  - get_witness_schedule
  - get_witnesses
- - get_witnesses_by_vote
- - lookup_witness_accounts
+ - get_witnesses_by_vote — возвращает массив делегатов, отсортированных по потенциалу полученных голосов (указывается левая граница списка и количество возвращаемых значений в массиве, но не более 100);
+Пример:
+ ```json
+{"id":1,"method":"call","jsonrpc":"2.0","params":["witness_api","get_witnesses_by_vote",["","10000"]]}
+ ```
+
+ Ответ:
+ ```json
+ [
+  {
+    "id": 42,
+    "owner": "solox",
+    "created": "2018-12-22T19:09:51",
+    "url": "http://viz.world/@solox/witness/",
+    "votes": "2265575784725",
+    "penalty_percent": 0,
+    "counted_votes": "2265575784725",
+    "virtual_last_update": "23453249838245982754942708691144",
+    "virtual_position": "0",
+    "virtual_scheduled_time": "23453400035105083671049497423272",
+    "total_missed": 273,
+    "last_aslot": 10942638,
+    "last_confirmed_block_num": 10916550,
+    "signing_key": "VIZ8MzGnSUeqbFaFr8g297XNDT7iWQZ8ktBgeBDYj1moWCHQ8a5PA",
+    "props": {
+      "account_creation_fee": "1.000 VIZ",
+      "maximum_block_size": 65536,
+      "create_account_delegation_ratio": 10,
+      "create_account_delegation_time": 2592000,
+      "min_delegation": "1.000 VIZ",
+      "min_curation_percent": 0,
+      "max_curation_percent": 10000,
+      "bandwidth_reserve_percent": 100,
+      "bandwidth_reserve_below": "1.000000 SHARES",
+      "flag_energy_additional_cost": 0,
+      "vote_accounting_min_rshares": 50000,
+      "committee_request_approve_min_percent": 1000,
+      "inflation_witness_percent": 3000,
+      "inflation_ratio_committee_vs_reward_fund": 7500,
+      "inflation_recalc_period": 806400,
+      "data_operations_cost_additional_bandwidth": 0,
+      "witness_miss_penalty_percent": 100,
+      "witness_miss_penalty_duration": 86400
+    },
+    "last_work": "0000000000000000000000000000000000000000000000000000000000000000",
+    "running_version": "2.4.0",
+    "hardfork_version_vote": "2.4.0",
+    "hardfork_time_vote": "2019-04-30T05:00:00"
+  }
+]
+ ```
+ - lookup_witness_accounts — возвращает массив логинов аккаунтов, которые заявляли себя как делегаты (указывается левая граница списка и количество возвращаемых значений в массиве, но не более 1000).
+
+ Пример:
+ ```json
+ {"id":1,"method":"call","jsonrpc":"2.0","params":["witness_api","lookup_witness_accounts",["","4"]]}
+ ```
+
+ Ответ:
+ ```json
+ [
+  "t3",
+  "lb",
+  "ae",
+  "in"
+]
+ ```
