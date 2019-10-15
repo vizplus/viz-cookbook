@@ -25,6 +25,7 @@
 ## Python
 
 [Библиотека thallid-viz](https://github.com/ksantoprotein/thallid-viz) от ksantoprotein поддерживает как API запросы, так и формирование транзакций. В наличии [множество примеров](https://github.com/ksantoprotein/thallid-viz/tree/master/examples) с разными операциями.
+
 [Библиотека viz-python-lib](https://github.com/VIZ-Blockchain/viz-python-lib) поддерживает большинство необходимого, но отсутствуют примеры и документация (библиотека пока недоделана).
 
 ## PHP
@@ -40,6 +41,7 @@
 ## Dart
 
 [Криптографическая библиотека viz_dart_ecc](https://github.com/VizTower/viz_dart_ecc) — позволяет формировать публичный ключ из приватного, подписывать данные, верифицировать подпись.
+
 [Библиотека viz-transaction](https://github.com/VizTower/viz-transaction) — позволяет формировать и подписывать транзакции для блокчейна VIZ (библиотека не содержит методов для трансляции транзакции блокчейн-ноде, для этого нужно использовать любые другие библиотеки для http/ws протокола).
 
 ## Другое
