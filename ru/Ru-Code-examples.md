@@ -66,7 +66,7 @@ viz.api.getActivePaidSubscriptions(subscriber,function(err,result){
 
 ### Транслирование транзакций (broadcast)
 
-Для каждой операции из протокола VIZ существует отдельный метод в библиотеке viz-js-lib, который принимает приватный ключ (для подписи транзакции) и параметры операции. Название операции, аналогично API методам, должно быть переведено в формат CamelCase. Пример кода для трансляции (broadcast) операции account_metadata (запись в блокчейн мета-данных аккаунта):
+Для каждой операции из протокола VIZ существует отдельный метод в библиотеке viz-js-lib, который принимает приватный ключ (для подписи транзакции) и параметры операции. Название операции, аналогично API методам, должно быть переведено в [формат CamelCase](https://ru.wikipedia.org/wiki/CamelCase). Пример кода для трансляции (broadcast) операции account_metadata (запись в блокчейн мета-данных аккаунта):
 
 ```js
 var regular_key='5K...';//приватный ключ
@@ -79,6 +79,68 @@ viz.broadcast.accountMetadata(regular_key,user_login,JSON.stringify(metadata),fu
 	}
 	else{
 		//нода не приняла транзакцию
+		console.log(err);
+	}
+});
+```
+
+### Получение информации об аккаунте
+
+Пример кода, для получения информации об аккаунте и рассчета актуального значения энергии аккаунта (учитывая скорость её восстановления):
+
+```js
+var current_user='on1x';
+viz.api.getAccounts([current_user],function(err,response){
+	if(!err){
+		//получен ответ
+		if(typeof response[0] !== 'undefined'){
+			//мы запросили массив аккаунтов, смотрим нулевой элемент, соответствующий current_user
+			let last_vote_time=Date.parse(response[0].last_vote_time);
+			//учитываем временную зону пользователя
+			let delta_time=parseInt((new Date().getTime() - last_vote_time + (new Date().getTimezoneOffset()*60000))/1000);
+			let energy=response[0].energy;
+			//рассчитываем востановленную энергию
+			//скорость восстановления энергии от 0% до 100% CHAIN_ENERGY_REGENERATION_SECONDS 5 дней (432000 секунд)
+			let new_energy=parseInt(energy+(delta_time*10000/432000));
+			//энергии не может быть больше 100%
+			if(new_energy>10000){
+				new_energy=10000;
+			}
+			console.log('актуальная энергия аккаунта',new_energy);
+		}
+		else{
+			console.log('аккаунт не найден',current_user);
+		}
+	}
+	else{
+		//ошибка
+		console.log(err);
+	}
+});
+```
+
+### Конвертации доли в токены VIZ
+
+Часто новые разработчики сталкиваются с проблемой, что пользователь делегировал часть токенов другому аккаунту и нужно рассчитать доступную долю для конвертации SHARES в VIZ. Пример кода:
+
+```js
+var current_user='on1x';
+viz.api.getAccounts([current_user],function(err,response){
+	if(!err){
+		//получен ответ
+		if(typeof response[0] !== 'undefined'){
+			vesting_shares=parseFloat(response[0].vesting_shares);
+			delegated_vesting_shares=parseFloat(response[0].delegated_vesting_shares);
+			shares=vesting_shares - delegated_vesting_shares;
+			let fixed_shares=''+shares.toFixed(6)+' SHARES';
+			console.log('доступные SHARES для конвертации',fixed_shares);
+		}
+		else{
+			console.log('аккаунт не найден',current_user);
+		}
+	}
+	else{
+		//ошибка
 		console.log(err);
 	}
 });
