@@ -36,10 +36,10 @@ viz.config.set('websocket',api_gate);
 Например, если вы решили выполнить запрос get_database_info к плагину database_api, то вам необходимо выполнить код:
 
 ```js
-viz.api.getDatabaseInfo(function(err,result){
+viz.api.getDatabaseInfo(function(err,response){
 	if(!err){
 		//получен ответ
-		console.log(result);
+		console.log(response);
 	}
 	else{
 		//ошибка
@@ -52,10 +52,10 @@ viz.api.getDatabaseInfo(function(err,result){
 
 ```js
 var subscriber='on1x';
-viz.api.getActivePaidSubscriptions(subscriber,function(err,result){
+viz.api.getActivePaidSubscriptions(subscriber,function(err,response){
 	if(!err){
 		//получен ответ
-		console.log(result);
+		console.log(response);
 	}
 	else{
 		//ошибка
@@ -82,6 +82,26 @@ viz.broadcast.accountMetadata(regular_key,user_login,JSON.stringify(metadata),fu
 		console.log(err);
 	}
 });
+```
+
+### Получение динамических глобальных свойствах сети
+
+Часть новичков хотят периодически опрашивать ноду и получать актуальные данные о DGP (Dynamic Global Properties), чтобы на основе этого показывать новые блоки, исполнять условия по необратимому блоку или подсвечивать в списке делегатов последнего, кто подписал блок. Для этого достаточно запрашивать данные по таймеру каждые 3 секунды (время между блоками):
+
+```js
+var dgp={}
+function update_dgp(auto=false){
+	viz.api.getDynamicGlobalProperties(function(err,response){
+		if(!err){
+			dgp=response;
+		}
+	});
+	if(auto){
+		setTimeout("update_dgp(true)",3000);
+	}
+}
+update_dgp(true);
+
 ```
 
 ### Получение информации об аккаунте
@@ -119,12 +139,50 @@ viz.api.getAccounts([current_user],function(err,response){
 });
 ```
 
-### Конвертации доли в токены VIZ
+### Конвертация токенов VIZ в долю
 
-Часто новые разработчики сталкиваются с проблемой, что пользователь делегировал часть токенов другому аккаунту и нужно рассчитать доступную долю для конвертации SHARES в VIZ. Пример кода:
+Для автоматической конвертации всех доступных токенов VIZ в долю сети SHARES необходимо запросить информацию об аккаунте и конвертировать их себе же в долю операцией transfer_to_vesting:
 
 ```js
-var current_user='on1x';
+var current_user='test';
+var active_key='5K...';//приватный активный ключ
+viz.api.getAccounts([current_user],function(err,response){
+	if(!err){
+		//получен ответ
+		if(typeof response[0] !== 'undefined'){
+			if('0.000 VIZ'!=response[0].balance){
+				viz.broadcast.transferToVesting(active_key,current_user,current_user,response[0].balance,function(err,result){
+					if(!err){
+						console.log('конвертация в долю сети',response[0].balance);
+						console.log(result);
+					}
+					else{
+						console.log(err);
+					}
+				});
+			}
+			else{
+				console.log('баланс на нуле');
+			}
+		}
+		else{
+			console.log('аккаунт не найден',current_user);
+		}
+	}
+	else{
+		//ошибка
+		console.log(err);
+	}
+});
+```
+
+### Конвертации доли в токены VIZ
+
+Часто новые разработчики сталкиваются с проблемой, что пользователь делегировал часть токенов другому аккаунту и нужно рассчитать доступную долю для конвертации SHARES в VIZ. Пример кода, который автоматически ставит доступные для конвертации SHARES на вывод из доли:
+
+```js
+var current_user='test';
+var active_key='5K...';//приватный активный ключ
 viz.api.getAccounts([current_user],function(err,response){
 	if(!err){
 		//получен ответ
@@ -134,10 +192,66 @@ viz.api.getAccounts([current_user],function(err,response){
 			shares=vesting_shares - delegated_vesting_shares;
 			let fixed_shares=''+shares.toFixed(6)+' SHARES';
 			console.log('доступные SHARES для конвертации',fixed_shares);
+			viz.broadcast.withdrawVesting(active_key,current_user,fixed_shares,function(err,result){
+				if(!err){
+					console.log('запуск конвертации доли сети в токены VIZ',fixed_shares);
+					console.log(result);
+				}
+				else{
+					console.log(err);
+				}
+			});
 		}
 		else{
 			console.log('аккаунт не найден',current_user);
 		}
+	}
+	else{
+		//ошибка
+		console.log(err);
+	}
+});
+```
+
+### Перевод токенов
+
+Пример перевода 1.000 VIZ из баланса аккаунта в комитет:
+
+```js
+var current_user='test';
+var active_key='5K...';//приватный активный ключ
+var target='committee';
+var fixed_amount='1.000 VIZ';
+var memo='Заметка';//utf-8 включая emoji
+viz.broadcast.transfer(active_key,current_user,target,fixed_amount,memo,function(err,result){
+	if(!err){
+		//получен ответ
+		console.log(result);
+	}
+	else{
+		//ошибка
+		console.log(err);
+	}
+});
+```
+
+### Награждение участика сети
+
+Аккаунт может наградить другого участника сети используя операцию award. Можно указать цель награды target, причину (номер custom_sequence или заметку memo), а также бенефициаров (аккаунты, которые разделят награду цели). Пример:
+
+```js
+var current_user='test';//аккаунт награждающего
+var regular_key='5K...';//приватный обычный ключ награждающего
+
+var target='viz.plus';//цель награды - заказчик статьи
+var energy='1000';//10.00% от актуальной энергии аккаунта
+var custom_sequence=0;//номер custom операции
+var memo='спасибо за viz cookbook';//utf-8 включая emoji
+var beneficiaries_list=[{"account":"on1x","weight":2000}];//20% автору статьи
+viz.broadcast.award(regular_key,current_user,target,energy,custom_sequence,memo,beneficiaries_list,function(err,result){
+	if(!err){
+		//получен ответ
+		console.log(result);
 	}
 	else{
 		//ошибка
