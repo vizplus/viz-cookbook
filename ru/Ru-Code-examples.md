@@ -6,6 +6,8 @@
 
 ## viz-js-lib
 
+Подробная документация на английском с указанием всех методов и их аттрибутов [доступно по ссылке](https://github.com/VIZ-Blockchain/viz-js-lib/tree/master/doc).
+
 ### Подключение библиотеки
 
 В зависимости от серверного (nodejs) или браузерного (js) использования библиотеку нужно подключать разными способами.
@@ -57,6 +59,26 @@ viz.api.getActivePaidSubscriptions(subscriber,function(err,result){
 	}
 	else{
 		//ошибка
+		console.log(err);
+	}
+});
+```
+
+### Транслирование транзакций (broadcast)
+
+Для каждой операции из протокола VIZ существует отдельный метод в библиотеке viz-js-lib, который принимает приватный ключ (для подписи транзакции) и параметры операции. Название операции, аналогично API методам, должно быть переведено в формат CamelCase. Пример кода для трансляции (broadcast) операции account_metadata (запись в блокчейн мета-данных аккаунта):
+
+```js
+var regular_key='5K...';//приватный ключ
+var user_login='test';//логин аккаунта
+var metadata={'name':'Тестовый аккаунт','photo':'https://cdn.pixabay.com/photo/2015/12/06/14/14/tokyo-1079524_960_720.jpg'};
+viz.broadcast.accountMetadata(regular_key,user_login,JSON.stringify(metadata),function(err, result){
+	if(!err){
+		//транзакция принята публичной нодой
+		console.log(result);
+	}
+	else{
+		//нода не приняла транзакцию
 		console.log(err);
 	}
 });
