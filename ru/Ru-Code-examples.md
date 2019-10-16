@@ -459,7 +459,7 @@ viz.broadcast.award(regular_key,current_user,target,energy,custom_sequence,memo,
 Рассмотрим пример сброса доступов к аккаунту (смену всех ключей и полномочий):
 
 ```js
-//метод требует приватный мастер ключ от аккаунта
+//функция требует приватный мастер ключ от аккаунта
 function reset_account_with_general_pass(account_login,master_key,general_pass){
 	if(''==general_pass){
 		//если не указан общий пароль, сгенерируем его
@@ -509,6 +509,240 @@ function reset_account_with_general_pass(account_login,master_key,general_pass){
 		}
 	});
 }
+```
+
+### Объявление аккаунта делегатом
+
+У каждого делегата есть ключ подписи блоков (`signing_key`), который отвечает за верификацию блокчейном подписи блока. Делегатская нода конфигурируется с приватным ключом подписи (лучше сформировать его заранее), а в блокчейн отправляется публичный ключ, для проверки подписей. В случае если делегат долго отсутствовал блокчейн отметит его как отключенного обнулив ключ подписи. Отключиться можно самостоятельно выставив пустой ключ подписи `VIZ1111111111111111111111111111111114T1Anm`. Пример кода для объявления аккаунта делегатом:
+
+```js
+var account_login='test';
+var active_key='5K...';
+var url='https://...';//ссылка на заявление о намерении быть делегатом
+var private_key=pass_gen();//генерируем приватный ключ
+var signing_key=viz.auth.wifToPublic(private_key);//публичный ключ
+viz.broadcast.witnessUpdate(active_key,account_login,url,signing_key,function(err,result){
+	if(!err){
+		console.log('Делегат '+account_login+' заявил о желании быть делегатом, приватный ключ подписи блоков: '+private_key);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+### Голосование за делегата
+
+Для того чтобы делегат начал подписывать блоки, у него должен быть не нулевой вес вес голосов. Доля аккаунта при голосовании за нескольких делегатов делится между ними. Пример кода для голосования за делегата:
+
+```js
+var account_login='test';
+var active_key='5K...';
+var witness_login='witness';
+var value=true;//булево значение голоса (true - проголосовать за делегата, false - снять голос)
+viz.broadcast.accountWitnessVote(active_key,account_login,witness_login,value,function(err, result){
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+### Установка голосуемых параметров сети
+
+Делегаты транслируют свою позицию по голосуемым параметрам сети. Блокчейн система каждый цикл очереди делегатов (21 блок) вычисляет медианные значения голосуемых параметров и фиксирует их на этот цикл. Подробнее про голосуемые параметры сети можно прочесть в разделе [Объекты и структуры в VIZ](Ru-Object-structures). Пример операции `versioned_chain_properties_update` для трансляции делегатом голосуемых параметров сети:
+
+```js
+var account_login='test';
+var active_key='5K...';//приватный активный ключ
+
+var props={};
+props.account_creation_fee='1.000 VIZ';
+props.create_account_delegation_ratio=10;
+props.create_account_delegation_time=2592000 ;
+props.bandwidth_reserve_percent=1;
+props.bandwidth_reserve_below='1.000000 SHARES';
+props.committee_request_approve_min_percent=1000;
+props.flag_energy_additional_cost=1000;//устаревший параметр
+props.min_curation_percent=0;//устаревший параметр
+props.max_curation_percent=10000;//устаревший параметр
+props.min_delegation='1.000 VIZ';
+props.vote_accounting_min_rshares=5000000 ;
+props.maximum_block_size=65536;
+
+props.inflation_witness_percent=2000;
+props.inflation_ratio_committee_vs_reward_fund=7500;
+props.inflation_recalc_period=806400;
+
+props.data_operations_cost_additional_bandwidth=0;
+props.witness_miss_penalty_percent=100;
+props.witness_miss_penalty_duration=86400;
+
+
+viz.broadcast.versionedChainPropertiesUpdate(active_key,account_login,[2,props],function(err,result){
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+### Заявка в комитет
+
+```js
+var account_login='test';
+var regular_key='5K...';//приватный регулярный ключ
+var url='https://...';//URL с описанием заявки
+var worker='test';//логин аккаунта, который в случае одобрения будет получать средства их фонда комитета
+var min_amount='0.000 VIZ';//минимальное количество токенов VIZ для удовлетворения заявки
+var max_amount='10000.000 VIZ';//максимальное количество токенов VIZ
+var duration=5*24*3600;//длительность заявки в секундах (должно быть между COMMITTEE_MIN_DURATION (5 дней) и COMMITTEE_MAX_DURATION (30 дней))
+
+viz.broadcast.committeeWorkerCreateRequest(regular_key,account_login,url,worker,min_amount,max_amount,duration,function(err,result) {
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+### Отмена заявки в комитете
+
+Отменить заявку может только её создатель.
+
+```js
+var account_login='test';
+var regular_key='5K...';//приватный регулярный ключ
+var request_id=14;//номер отменяемой заявки комитета
+
+viz.broadcast.committeeWorkerCancelRequest(regular_key,account_login,request_id,function(err,result) {
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+### Голосование по заявке в комитете
+
+Проголосовать за заявку может любой участник сети. При завершении время действия заявки происходит расчет удовлетворенной суммы выплаты из комитета учитывающий долю голоса от общего веса проголосовавших и выставленный ими процент согласия с условиями заявки (от -100% до +100%). Если сумма доли сети проголосовавших превышает голосуемый параметр сети `committee_request_approve_min_percent` и расчетная сумма входит в заложенные заявкой рамки, то заявка удовлетворяется комитетом и ставится в очередь на выплаты. Полную механику можно изучить [в файле database.cpp метод committee_processing()](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/chain/database.cpp#L1380). Пример кода с голосованием за заявку:
+
+```js
+var account_login='test';
+var regular_key='5K...';//приватный регулярный ключ
+var request_id=15;//номер заявки комитета
+var percent=8000;//80% процент от максимальной суммы заявки, на который считает правильным удовлетворить заявку голосующий
+viz.broadcast.committeeVoteRequest(regular_key,account_login,request_id,percent,function(err,result) {
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+### Платные подписки
+
+Система платных подписок в VIZ позволяет любому аккаунту задать условия соглашения, после подписания которого от подписчика будут перечисляться токены VIZ на баланс провайдера соглашения. Система позволяет изменять условия соглашения провайдеру и автоматически пытается согласовать их в момент экспирации и продления активных подписок без ущерба подписчику. Подписчик может указать единоразово он платит провайдеру по соглашению или согласен автоматически продливать подписку при наличии нужной суммы токенов VIZ на своем балансе. Публикация условий соглашения по платной подписке:
+
+```js
+var account_login='test';
+var active_key='5K...';//приватный активный ключ
+var url='https://...';//URL с описанием платной подписки и соглашения
+var levels=3;//количество уровней платной подписки (провайдер сам решает количество уровней и что будет предоставлять за каждый), если указать 0, то новые подписки не смогут быть оформлены
+var amount='100.000 VIZ';//количество токенов VIZ за каждый уровень платной подписки
+var period=30;//период действия подписки (количество дней)
+viz.broadcast.setPaidSubscription(active_key,account_login,url,levels,amount,period,function(err,result){
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+Аккаунт, желающий заключить соглашение о платной подписке должен подтвердить системе условия соглашения, желаемый уровень подписки и необходимость автоматического продления. Также можно изменить уровень подписки, система автоматически сделает пересчет и либо снимет необходимую сумму, либо продлит время для экспирации соглашения:
+
+```js
+var account_login='subscriber';
+var active_key='5K...';//приватный активный ключ
+var provider_account='test';//логин аккаунта провайдера платной подписки
+var level=2;//желаемый уровень платной подписки
+var amount='100.000 VIZ';//количество токенов VIZ за каждый уровень по соглашению
+var period=30;//период действия подписки по соглашению
+var auto_renewal=true;//необходимость автоматического продления
+viz.broadcast.paidSubscribe(active_key,account_login,provider_account,level,amount,period,auto_renewal,function(err,result){
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+Получить информацию об условиях соглашения по платной подписке:
+
+```js
+var provider_account='test';
+viz.api.getPaidSubscriptionOptions(provider_account,function(err, response){
+	if(!err){
+		console.log(response);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+Получить список активных или инактивных платных подписок можно API запросом:
+
+```js
+var account_login='subscriber';
+viz.api.getActivePaidSubscriptions(account_login,function(err, response){
+	for(let i in response){
+		console.log('Действует соглашение по платной подписке с аккаунтом '+response[i]);
+	}
+}
+viz.api.getInactivePaidSubscriptions(account_login,function(err, response){
+	for(let i in response){
+		console.log('Действует соглашение по платной подписке с аккаунтом '+response[i]);
+	}
+}
+```
+
+Проверить действующее соглашение можно через API запрос:
+
+```js
+var account_login='subscriber';
+var provider_account='test';
+gate.api.getPaidSubscriptionStatus(account_login,provider_account,function(err, response){
+	if(!err){
+		console.log('Соглашение с аккаунтом '+response.creator);
+		console.log('Статус соглашения: '+(response.active?'активное':'инактивное'));
+		console.log('Автопродление: '+(response.auto_renewal?'включено':'отключено'));
+		console.log('Уровень подписки: '+response.level);
+		console.log('Стоимость уровеня подписки: '+(response.amount/1000)+' VIZ');
+		console.log('Период подписки в днях: '+response.period);
+		console.log('Дата начала соглашения: '+response.start_time);
+		if(response.active){
+			console.log('Дата экспирации соглашения: '+response.next_time);
+		}
+	}
+	else{
+		console.log(err);
+	}
+});
 ```
 
 ## js запросы к публичной ноде VIZ без библиотеки
