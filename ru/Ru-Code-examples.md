@@ -315,7 +315,7 @@ viz.api.getAccounts([current_user],function(err,response){
 });
 ```
 
-### Конвертации доли в токены VIZ
+### Конвертация доли в токены VIZ
 
 Часто новые разработчики сталкиваются с проблемой, что пользователь делегировал часть токенов другому аккаунту и нужно рассчитать доступную долю для конвертации SHARES в VIZ. Пример кода, который автоматически ставит доступные для конвертации SHARES на вывод из доли:
 
@@ -397,6 +397,118 @@ viz.broadcast.award(regular_key,current_user,target,energy,custom_sequence,memo,
 		console.log(err);
 	}
 });
+```
+
+### Смена ключей аккаунта
+
+Бывает, что есть необходимость сменить доступы у аккаунта. Это может быть по причине добавления нового ключа, делегирование управления или создание условий для мульти-подписного управления аккаунтом (когда для выполнения операций требуется подпись несколькими ключами).
+
+Полномочия для выполнения операций имеют следующую структуру:
+ - *weight_threshold* — необходимый вес для одобрения транзакции с операциями нужного типа;
+ - *account_auths* — массив аккаунтов и их весов. Аккаунты могут добавить вес транзакции при добавлении к ней подписи ключом;
+ - *key_auths* — массив публичных ключей и их весов.
+
+Система проверяет транзакцию, операции в ней, проверяет наличие подписей задейственных аккаунтов и достаточным ли весом они обладают, для совершения действия положенного типа.
+
+Пример полномочий с одним ключом:
+
+```json
+{
+	"weight_threshold": 1,
+	"account_auths": [],
+	"key_auths": [
+		["VIZ6LWhhUzKmYM5VcxtC2FpEjzr71imfb7DeGA9yodeqnvtP2SYjA", 1]
+	]
+}
+```
+
+Если у аккаунта будет записаны эти полномочия в тип доступа regular, то для совершения операции награждения блокчейн будет требовать подпись транзакции ключом `5KRLZitDd5c9uZzDgTMF4se4eVewENtZ29GbCuKwbT3msRbtLgi` (которому соответствует указанный в полномочиях публичный ключ `VIZ6LWhhUzKmYM5VcxtC2FpEjzr71imfb7DeGA9yodeqnvtP2SYjA`).
+
+При делегировании управления другому аккаунту, например `test`, необходимо изменить полномочия на:
+
+```json
+{
+	"weight_threshold": 1,
+	"account_auths": [
+		["test", 1]
+	],
+	"key_auths": [
+		["VIZ6LWhhUzKmYM5VcxtC2FpEjzr71imfb7DeGA9yodeqnvtP2SYjA", 1]
+	]
+}
+```
+
+После этого блокчейн будет требовать подпись либо указанным ключом, либо ключом аналогичного типа доступа аккаунта `test`.
+
+Мульти-подписное управление предполагает усложнение полномочий, например для управления 2 из 3 можно использовать полномочие:
+
+```json
+{
+	"weight_threshold": 4,
+	"account_auths": [],
+	"key_auths": [
+		["VIZ6LWhhUzKmYM5VcxtC2FpEjzr71imfb7DeGA9yodeqnvtP2SYjA", 2],
+		["VIZ5mK1zLnYHy7PbnsxRpS4NbKjEoH2J9eBmgSjVKJ5BKQpLLj9T4", 2],
+		["VIZ4uiqeDPsoteSFVbTWPBUbmfzxYkJyXYmA6B1pAFWZ59n4iBuUK", 2]
+	]
+}
+```
+
+Для того чтобы транзакция была принята блокчейном, необходимо добавить подписи как минимум 2 из 3 указанных ключей. В этом примере публичному ключу `VIZ4uiqeDPsoteSFVbTWPBUbmfzxYkJyXYmA6B1pAFWZ59n4iBuUK` соответствует приватный ключ `5KMBKopgd56MZvV8FYhp5AP7AWFyLKiybqRnZYgjXukw34VRE78`.
+
+Рассмотрим пример сброса доступов к аккаунту (смену всех ключей и полномочий):
+
+```js
+//метод требует приватный мастер ключ от аккаунта
+function reset_account_with_general_pass(account_login,master_key,general_pass){
+	if(''==general_pass){
+		//если не указан общий пароль, сгенерируем его
+		general_pass=pass_gen(50,false);
+	}
+	let auth_types = ['regular','active','master','memo'];
+	let keys=viz.auth.getPrivateKeys(account_login,general_pass,auth_types);
+	let master = {
+		'weight_threshold': 1,
+		'account_auths': [],
+		'key_auths': [
+			[keys.masterPubkey, 1]
+		]
+	};
+	let active = {
+		'weight_threshold': 1,
+		'account_auths': [],
+		'key_auths': [
+			[keys.activePubkey, 1]
+		]
+	};
+	let regular = {
+		'weight_threshold': 1,
+		'account_auths': [],
+		'key_auths': [
+			[keys.regularPubkey, 1]
+		]
+	};
+	let memo_key=keys.memoPubkey;
+	viz.api.getAccounts([account_login],function(err,response){
+		if(0==response.length){
+			err=true;
+		}
+		if(!err){
+			let json_metadata=response[0].json_metadata;
+			viz.broadcast.accountUpdate(master_key,account_login,master,active,regular,memo_key,json_metadata,function(err,result){
+				if(!err){
+					console.log('Reset Account: '+account_login+'\r\nGeneral pass (for private keys): '+general_pass+'\r\nPrivate master key: '+keys.master+'\r\nPrivate active key: '+keys.active+'\r\nPrivate regular key: '+keys.regular+'\r\nPrivate memo key: '+keys.memo+'');
+				}
+				else{
+					console.log(err);
+				}
+			});
+		}
+		else{
+			console.log("Пользователь не найден");
+		}
+	});
+}
 ```
 
 ## js запросы к публичной ноде VIZ без библиотеки
