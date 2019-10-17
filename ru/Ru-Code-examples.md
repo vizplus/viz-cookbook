@@ -622,7 +622,7 @@ var min_amount='0.000 VIZ';//минимальное количество ток�
 var max_amount='10000.000 VIZ';//максимальное количество токенов VIZ
 var duration=5*24*3600;//длительность заявки в секундах (должно быть между COMMITTEE_MIN_DURATION (5 дней) и COMMITTEE_MAX_DURATION (30 дней))
 
-viz.broadcast.committeeWorkerCreateRequest(regular_key,account_login,url,worker,min_amount,max_amount,duration,function(err,result) {
+viz.broadcast.committeeWorkerCreateRequest(regular_key,account_login,url,worker,min_amount,max_amount,duration,function(err,result){
 	if(!err){
 		console.log(result);
 	}
@@ -641,7 +641,7 @@ var account_login='test';
 var regular_key='5K...';//приватный регулярный ключ
 var request_id=14;//номер отменяемой заявки комитета
 
-viz.broadcast.committeeWorkerCancelRequest(regular_key,account_login,request_id,function(err,result) {
+viz.broadcast.committeeWorkerCancelRequest(regular_key,account_login,request_id,function(err,result){
 	if(!err){
 		console.log(result);
 	}
@@ -660,7 +660,7 @@ var account_login='test';
 var regular_key='5K...';//приватный регулярный ключ
 var request_id=15;//номер заявки комитета
 var percent=8000;//80% процент от максимальной суммы заявки, на который считает правильным удовлетворить заявку голосующий
-viz.broadcast.committeeVoteRequest(regular_key,account_login,request_id,percent,function(err,result) {
+viz.broadcast.committeeVoteRequest(regular_key,account_login,request_id,percent,function(err,result){
 	if(!err){
 		console.log(result);
 	}
@@ -831,6 +831,31 @@ viz.api.getExpiringVestingDelegations(account_login,start_from,count,function(er
 });
 ```
 
+### Custom операции
+
+Когда разработчикам нужно ввести свою структуру в блокчейн, сделать децентрализированное приложение (dApp), которое будет мониторить блоки и учитывать операции в сети — они могут использовать custom операции. Custom операция имеет гибкую структуру:
+
+ - **required_active_auths** — массив аккаунтов, чьи подписи активными ключами должна содержать транзакция;
+ - **required_regular_auths** — массив аккаунтов, чьи подписи регулярными ключами должна содержать транзакция;
+ - **custom_name** — наименование категории custom операции (разработчики сами решают какое наименование использовать для своего приложения);
+ - **custom_json** — любая структура в JSON формате;
+
+Разработчики могут сами придумать структуры данных, протокол команд и их учет через custom операции. Например, это может быть карточная игра, медиа-блоги, комментарии, каталог товаров или работа с рекламными блоками.
+
+Пример использования custom операции:
+
+```js
+var account_login='test';
+var required_active_auths=[];
+var required_regular_auths=[account_login];
+var private_key='5K...';
+var custom_name='file_app';
+var custom_json='{"directory":"/photos/2020/viz_conf/","filename":"moscow_camp.jpg","url":"https://..."}';
+viz.broadcast.custom(private_key,required_active_auths,required_regular_auths,custom_name,custom_json,function(err,result){
+	console.log(err,result);
+});
+```
+
 ## js запросы к публичной ноде VIZ без библиотеки
 
 Если вашему приложению не требуется криптография и подпись транзакций, то вы можете использовать нативные средства для json-rpc запросов через js.
@@ -867,7 +892,7 @@ xhr.overrideMimeType('text/plain');
 xhr.open('POST',api_gate);
 xhr.setRequestHeader('accept','application/json, text/plain, */*');
 xhr.setRequestHeader('content-type','application/json');
-xhr.onreadystatechange = function() {
+xhr.onreadystatechange=function(){
 	if(4==xhr.readyState && 200==xhr.status){
 		latency=new Date().getTime() - latency_start;
 		console.log(xhr);
