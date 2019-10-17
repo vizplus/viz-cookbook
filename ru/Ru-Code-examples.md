@@ -848,11 +848,60 @@ viz.api.getExpiringVestingDelegations(account_login,start_from,count,function(er
 var account_login='test';
 var required_active_auths=[];
 var required_regular_auths=[account_login];
-var private_key='5K...';
+var private_key='5K...';//приватный ключ нужного типа доступа (в данном случае regular)
 var custom_name='file_app';
 var custom_json='{"directory":"/photos/2020/viz_conf/","filename":"moscow_camp.jpg","url":"https://..."}';
 viz.broadcast.custom(private_key,required_active_auths,required_regular_auths,custom_name,custom_json,function(err,result){
 	console.log(err,result);
+});
+```
+
+### Продажа аккаунта
+
+Владелец аккаунта может выставить его на продажу используя master доступ:
+
+```js
+var account_login='test';
+var master_key='5K...';
+var seller_login='reseller';//логин аккаунта который получит токены при успешной продаже аккаунта
+var fixed_price_amount='10000.000 VIZ';//цена аккаунта
+var on_sale=true;//выставить аккаунт на продажу (если false, то снять с продажи)
+viz.broadcast.setAccountPrice(master_key,account_login,seller_login,fixed_price_amount,on_sale,function(err,result){
+	console.log(err,result);
+});
+```
+
+Также можно выставить на продажу сабаккаунты (`*.login`):
+
+```js
+var account_login='test';
+var master_key='5K...';
+var seller_login='test';//логин аккаунта который получит токены при успешной продаже аккаунта
+var fixed_price_amount='1000.000 VIZ';//цена сабаккаунта
+var on_sale=true;//выставить сабаккаунты на продажу (если false, то снять с продажи)
+viz.broadcast.setSubaccountPrice(master_key,account_login,seller_login,fixed_price_amount,on_sale,function(err,result){
+	console.log(err,result);
+});
+```
+
+Купить аккаунт или сабаккаунт можно операцией `buy_account`, система проверит возможность покупки и проведет сделку если это возможно:
+
+```js
+var account_login='buyer';
+var active_key='5K...';
+var account_login='enjoy.test';//покупка сабаккаунта у аккаунта test
+var account_offer_price='1000.000 VIZ';//согласованная цена предложения (если цена изменится, блокчейн откажет в операции)
+var private_key=pass_gen();//генерируем приватный ключ
+var public_key=viz.auth.wifToPublic(private_key);//получаем публичный ключ из приватного
+var token_to_shares='5.000 VIZ';//дополнительно потратить токены для конвертации в долю нового аккаунта
+gate.broadcast.buyAccount(active_key,current_user,account_login,account_offer_price,public_key,token_to_shares,function(err,result){
+	if(!err){
+		console.log('Покупка аккаунта '+account_login+' прошла успешно, приватный общий ключ '+private_key);
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
 });
 ```
 
