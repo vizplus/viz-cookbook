@@ -72,7 +72,7 @@ viz.api.getActivePaidSubscriptions(subscriber,function(err,response){
 var regular_key='5K...';//приватный ключ
 var user_login='test';//логин аккаунта
 var metadata={'name':'Тестовый аккаунт','photo':'https://cdn.pixabay.com/photo/2015/12/06/14/14/tokyo-1079524_960_720.jpg'};
-viz.broadcast.accountMetadata(regular_key,user_login,JSON.stringify(metadata),function(err, result){
+viz.broadcast.accountMetadata(regular_key,user_login,JSON.stringify(metadata),function(err,result){
 	if(!err){
 		//транзакция принята публичной нодой
 		console.log(result);
@@ -383,7 +383,7 @@ var current_user='test';//аккаунт награждающего
 var regular_key='5K...';//приватный обычный ключ награждающего
 
 var target='viz.plus';//цель награды - заказчик статьи
-var energy='1000';//10.00% от актуальной энергии аккаунта
+var energy='1000';//10.00% будут потрачены из актуальной энергии аккаунта
 var custom_sequence=0;//номер custom операции
 var memo='спасибо за viz cookbook';//utf-8 включая emoji
 var beneficiaries_list=[{"account":"on1x","weight":2000}];//20% автору статьи
@@ -540,7 +540,27 @@ var account_login='test';
 var active_key='5K...';
 var witness_login='witness';
 var value=true;//булево значение голоса (true - проголосовать за делегата, false - снять голос)
-viz.broadcast.accountWitnessVote(active_key,account_login,witness_login,value,function(err, result){
+viz.broadcast.accountWitnessVote(active_key,account_login,witness_login,value,function(err,result){
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+### Передача права голосования прокси (proxy)
+
+Если пользователь не принимает участие в выборе делегатов, он может делегировать право распоряжаться его долей другому аккаунту. Для этого существует операция `account_witness_proxy`, ей может воспользоваться приложение регистратор, чтобы не загружать своего пользователя лишней информацией об устройстве блокчейн-системы и не терять своё влияние (так как для регистрации аккаунта могут затрачиваться токены VIZ, то приложение вкладывает в пользователей потенциал аналогиной доли сети).
+
+Если пользователь решит самостоятельно участвовать в выборе делегатов, то первый же голос за делегата отменит прокси.
+
+```js
+var account_login='test';
+var active_key='5K...';
+var proxy_login='proxy';
+viz.broadcast.accountWitnessProxy(active_key,account_login,proxy_login,function(err,result){
 	if(!err){
 		console.log(result);
 	}
@@ -695,7 +715,7 @@ viz.broadcast.paidSubscribe(active_key,account_login,provider_account,level,amou
 
 ```js
 var provider_account='test';
-viz.api.getPaidSubscriptionOptions(provider_account,function(err, response){
+viz.api.getPaidSubscriptionOptions(provider_account,function(err,response){
 	if(!err){
 		console.log(response);
 	}
@@ -709,12 +729,12 @@ viz.api.getPaidSubscriptionOptions(provider_account,function(err, response){
 
 ```js
 var account_login='subscriber';
-viz.api.getActivePaidSubscriptions(account_login,function(err, response){
+viz.api.getActivePaidSubscriptions(account_login,function(err,response){
 	for(let i in response){
 		console.log('Действует соглашение по платной подписке с аккаунтом '+response[i]);
 	}
 }
-viz.api.getInactivePaidSubscriptions(account_login,function(err, response){
+viz.api.getInactivePaidSubscriptions(account_login,function(err,response){
 	for(let i in response){
 		console.log('Действует соглашение по платной подписке с аккаунтом '+response[i]);
 	}
@@ -726,7 +746,7 @@ viz.api.getInactivePaidSubscriptions(account_login,function(err, response){
 ```js
 var account_login='subscriber';
 var provider_account='test';
-gate.api.getPaidSubscriptionStatus(account_login,provider_account,function(err, response){
+gate.api.getPaidSubscriptionStatus(account_login,provider_account,function(err,response){
 	if(!err){
 		console.log('Соглашение с аккаунтом '+response.creator);
 		console.log('Статус соглашения: '+(response.active?'активное':'инактивное'));
@@ -741,6 +761,72 @@ gate.api.getPaidSubscriptionStatus(account_login,provider_account,function(err, 
 	}
 	else{
 		console.log(err);
+	}
+});
+```
+
+### Делегирование доли
+
+В блокчейне VIZ есть возможность делегировать долю (SHARES) другому аккаунту, что позволяет передать управление долей связанное с наградами, голосованием в комитете и получением пропускной способности сети (bandwidth). Делегирование не распространяется на голосование за делегатов, так как там присутствует отдельная операция в виде передачи права голоса всей своей доли операцией `account_witness_proxy`.
+
+Правила делегирования доли частично прописаны в протоколе сети, частично управляются делегатами:
+ - Минимальная сумма делегирования задается делегатами через голосуемый параметр **min_delegation**;
+ - Коэффициент наценки делегирования при создании нового аккаунта задается делегатами через голосуемый параметр **create_account_delegation_ratio**;
+ - Длительность делегирования (невозможность его отмены) при создании аккаунта задается делегатами через голосуемый параметр **create_account_delegation_time**;
+ - Минимальная длительность делегирования заложена в протокол (константа CHAIN_CASHOUT_WINDOW_SECONDS равная одному одному дню);
+
+При делегировании срабатывает защитный механизм от абуза двойной траты энергии. Если делегатор передает 50% от своей доли, то энергия будет уменьшена на 50%. Энергия в таком случае может стать отрицательной (до -100%). Стоит учитывать, что операция `delegate_vesting_shares` задает фактическое значение делегированной доли. Если вы захотите отменить делегирование, значит надо задать значение делегированной доли `0.000000 SHARES`. Если вы хотите увеличить делегирование с `1000.000000 SHARES` до `3000.000000 SHARES`, то вам нужно просто задать значение делегирования `3000.000000 SHARES`.
+
+Пример кода для делегирования доли другому аккаунту:
+
+```js
+var account_login='test';
+var active_key='5K...';//приватный активный ключ
+var delegatee='recipient';//цель делегирования
+var shares='100.000000 SHARES';
+viz.broadcast.delegateVestingShares(active_key,account_login,delegatee,shares,function(err,result){
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+Получение информации о делегировании:
+
+```js
+var account_login='test';
+var start_from=0;
+var count=1000;
+var type=0;//0 - исходящее делегирование, 1 - входящее делегирование
+viz.api.getVestingDelegations(account_login,start_from,count,type,function(err,response){
+	if(!err){
+		if(0==response.length){
+			console.log('Нет записей о делегированной доле');
+		}
+		for(delegation in response){
+			console.log('Делегировано аккаунту '+response[delegation].delegatee+', '+response[delegation].vesting_shares+', можно отозвать после '+response[delegation].min_delegation_time);
+		}
+	}
+});
+```
+
+Получение информации о возвращении делегированной доли после отмены делегирования:
+
+```js
+var account_login='test';
+var start_from=new Date().toISOString().substr(0,19);//поиск возврата делегированной доли после даты оформленной в формате ISO
+var count=1000;
+viz.api.getExpiringVestingDelegations(account_login,start_from,count,function(err,response){
+	if(!err){
+		if(0==response.length){
+			console.log('Нет записей о возвращаемой делегированной доле');
+		}
+		for(delegation in response){
+			console.log(response[delegation].vesting_shares+' вернется '+response[delegation].expiration);
+		}
 	}
 });
 ```
