@@ -889,14 +889,108 @@ viz.broadcast.setSubaccountPrice(master_key,account_login,seller_login,fixed_pri
 ```js
 var account_login='buyer';
 var active_key='5K...';
-var account_login='enjoy.test';//покупка сабаккаунта у аккаунта test
+var subaccount_login='enjoy.test';//покупка сабаккаунта у аккаунта test
 var account_offer_price='1000.000 VIZ';//согласованная цена предложения (если цена изменится, блокчейн откажет в операции)
 var private_key=pass_gen();//генерируем приватный ключ
 var public_key=viz.auth.wifToPublic(private_key);//получаем публичный ключ из приватного
 var token_to_shares='5.000 VIZ';//дополнительно потратить токены для конвертации в долю нового аккаунта
-gate.broadcast.buyAccount(active_key,current_user,account_login,account_offer_price,public_key,token_to_shares,function(err,result){
+gate.broadcast.buyAccount(active_key,account_login,subaccount_login,account_offer_price,public_key,token_to_shares,function(err,result){
 	if(!err){
 		console.log('Покупка аккаунта '+account_login+' прошла успешно, приватный общий ключ '+private_key);
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+### Трехсторонние Escrow сделки
+
+Трехсторонние сделки работают по принципу проверки выполнения условий гарантом (agent). Получатель и гарант должны подтвердить начало сделки операцией `escrow_approve` (гарант получает комиссию на этом этапе). Если наступает момент спора, то отправитель или получатель могут инициировать разбирательство операцией `escrow_dispute`, после чего принятие решения по сделке передается гаранту (именно он решает кто и сколько токенов получит). Если сделка повисла и долгое время не разрешается — договор истекает и все оставшиеся токены и комиссия агенту возвращаются отправителю после наступления даты принудительного окончания сделки ([метод `expire_escrow_ratification` в файле database.cpp](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/chain/database.cpp#L2498)).
+
+Создание escrow перевода:
+
+```js
+var account_login='test';
+var active_key='5K...';
+var receiver_login='receiver';
+var agent_login='agent';
+var escrow_id=1;//номер escrow назначается вручную для согласования заявки (uint32)
+var token_amount='100.000 VIZ';//количество передаваемых токенов
+var fee='10.000 VIZ';//комиссия гаранта
+var ratification_deadline=new Date().toISOString().substr(0,19);//дата принудительной окончания сделки и возврата средств (дедлайн в формате ISO вида 2019-10-17T13:30:18)
+var escrow_expiration=new Date().toISOString().substr(0,19);//дата окончания принятия решения по сделке (дедлайн в формате ISO вида 2019-10-17T13:30:18)
+var json_metadata='{}';//дополнительные мета-данные в формате json
+gate.broadcast.escrowTransfer(active_key,account_login,receiver_login,agent_login,escrow_id,token_amount,fee,ratification_deadline,escrow_expiration,json_metadata,function(err,result){
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+Подтверждение участие в сделке по предложенным условиям (свое участие должны подтвердить гарант и получатель операцией `escrow_approve`):
+
+```js
+var account_login='test';
+var receiver_login='receiver';
+var agent_login='agent';
+var escrow_id=1;//номер escrow назначается вручную для согласования заявки (uint32)
+
+var who=agent_login;//кто подтверждает свое участие
+var active_key='5K...';//ключ подтверждающий стороны (who)
+
+var approve=true;//false в случае отказа от участия в сделке
+gate.broadcast.escrowApprove(active_key,account_login,receiver_login,agent_login,who,escrow_id,approve,function(err,result){
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+Требование диспута (открыть спор по сделке может отправитель или получатель операцией `escrow_dispute`):
+
+```js
+var account_login='test';
+var receiver_login='receiver';
+var agent_login='agent';
+var escrow_id=1;//номер escrow назначается вручную для согласования заявки (uint32)
+
+
+var who=receiver_login;//кто подтверждает свое участие
+var active_key='5K...';//ключ подтверждающий стороны (who)
+
+gate.broadcast.escrowDispute(active_key,account_login,receiver_login,agent_login,who,escrow_id,function(err,result){
+	if(!err){
+		console.log(result);
+	}
+	else{
+		console.log(err);
+	}
+});
+```
+
+Отпустить средства (операция `escrow_release`):
+
+```js
+var account_login='test';
+var receiver_login='receiver';
+var agent_login='agent';
+var escrow_id=1;//номер escrow назначается вручную для согласования заявки (uint32)
+var token_amount='100.000 VIZ';//количество передаваемых токенов
+
+var who=receiver_login;//кто решил отпустить средства
+var active_key='5K...';//ключ инициатора операции (who)
+var receiver=account_login;//получатель средств (другая сторона сделки или если открыт диспут, то гарант решает кому и сколько перевести)
+
+gate.broadcast.escrowRelease(active_key,account_login,receiver_login,agent_login,who,receiver,escrow_id,token_amount,function(err,result){
+	if(!err){
 		console.log(result);
 	}
 	else{
