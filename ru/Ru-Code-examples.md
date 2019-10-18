@@ -84,7 +84,7 @@ viz.broadcast.accountMetadata(regular_key,user_login,JSON.stringify(metadata),fu
 });
 ```
 
-### Получение динамических глобальных свойствах сети
+### Динамические глобальные свойства сети
 
 Часть новичков хотят периодически опрашивать ноду и получать актуальные данные о DGP (Dynamic Global Properties), чтобы на основе этого показывать новые блоки, исполнять условия по необратимому блоку или подсвечивать в списке делегатов последнего, кто подписал блок. Для этого достаточно запрашивать данные по таймеру каждые 3 секунды (время между блоками):
 
@@ -1027,7 +1027,7 @@ var recovery_account='escrow';
 var active_key='5K...';
 
 var account_to_recover='test';
-var private_key=pass_gen();//генерируем приватный ключ (передаем владельцу аккаунта или согласовываем с ним публичный ключ для мастер привелегии)
+var private_key=pass_gen();//генерируем приватный ключ (передаем владельцу аккаунта или согласовываем с ним публичный ключ для мастер привилегии)
 var public_key=viz.auth.wifToPublic(private_key);//получаем публичный ключ из приватного
 
 var new_master_authority={
@@ -1036,7 +1036,7 @@ var new_master_authority={
 	'key_auths': [
 		[public_key, 1]
 	]
-};//новая мастер привелегия
+};//новая мастер привилегия
 var extensions=[];//дополнительное поле, не используется
 viz.broadcast.requestAccountRecovery(active_key,recovery_account,account_to_recover,new_master_authority,extensions,function(err,result) {
 	console.log(err,result);
@@ -1056,7 +1056,7 @@ var new_master_authority={
 	'key_auths': [
 		[new_master_public_key, 1]
 	]
-};//новая мастер привелегия
+};//новая мастер привилегия
 
 var recent_master_key='5K...';//старый приватный мастер ключ для доказательства идентификации
 var recent_master_public_key=viz.auth.wifToPublic(recent_master_key);//старый публичный мастер ключ
@@ -1066,7 +1066,7 @@ var recent_master_authority={
 	'key_auths': [
 		[recent_master_public_key, 1]
 	]
-};//старая мастер привелегия как доказательство идентификации
+};//старая мастер привилегия как доказательство идентификации
 var extensions=[];//дополнительное поле, не используется
 
 var operations=['recover_account',['account_to_recover':account_login,'new_master_authority':new_master_authority,'recent_master_authority':recent_master_authority,'extensions':extensions]];
@@ -1087,6 +1087,138 @@ var new_recovery_account='escrow';//новый доверенный аккаун
 var extensions=[];//дополнительное поле, не используется
 viz.broadcast.changeRecoveryAccount(master_key,account_login,new_recovery_account,extensions,function(err,result) {
 	console.log(err,result);
+});
+```
+
+### Система предложенных операций (proposal)
+
+Для управления системой предложенных операций существует 3 операции: создания предложения, предоставление подписи (обновление), удаление предложения. После создания предложения блокчейн система будет ожидать все необходимые подписи для осуществления операций заложенных внутрь предложения, после чего выполнит их. Если подошел срок истечения, то предложение не будет выполнено. Системой предложенных операций пользуются для управления мультиподписными аккаунтами. Для создания предложения используйте операцию `proposal_create`:
+
+```js
+var account_login='test';
+var active_key='5K...';//активный приватный ключ
+var title='payments-14';//наименование предложения (играет роль идентификатора, должно быть уникальным)
+var memo='Платежи по договору №14';
+
+var expiration_date=new Date();//дата экспирации, когда предложенные операции будут отклонены или выполнены при получении всех необходимых подписей
+expiration_date.setDate(expiration_date.getDate() + 10);//плюс десять дней от текущего момента
+var expiration_time=expiration_date.toISOString().substr(0,19);//дата истечения предложения в формате ISO
+console.log('expiration_time',expiration_time);
+
+var proposed_operations=[];
+proposed_operations.push({'op':['transfer',{'from':'escrow','to':'test','amount':'10.000 VIZ','memo':memo}]});
+proposed_operations.push({'op':['transfer',{'from':'escrow2','to':'test','amount':'10.000 VIZ','memo':memo}]});
+
+var review_period_date=new Date(expiration_date.getTime() - 10);//дата прекращения приема подписей (минус 10 секунд до даты экспирации)
+var review_period_time=review_period_date.toISOString().substr(0,19);//дата истечения предложения в формате ISO
+console.log('review_period_time',review_period_time);
+
+var extensions=[];
+
+viz.broadcast.proposalCreate(active_key,account_login,title,memo,expiration_time,proposed_operations,review_period_time,extensions,function(err,result){
+	console.log(err,result);
+});
+```
+
+Чтобы получить информацию о предложениях сделанных пользователем, нужно выполнить API запрос `get_proposed_transactions` к плагину `database_api` (будет возвращен массив предложений):
+
+```js
+var looking_account='test';
+var from=0;
+var limit=100;
+viz.api.getProposedTransactions(looking_account,from,limit,function(err,response){
+	console.log(err,response);
+});
+```
+
+Система предложений поддерживает все существующие операции в блокчейне, но не позволяет смешивать операции требующие разных привилегий (например, операции `tranfer`, требующие active привилегии, и операции `award`, требующие regular привилегии). Предоставить подпись нужного типа доступа можно операцией `proposal_update` указав логин подписавшего транзакцию в массиве на добавление или удаления из списка подтвердивших предложение (для этого есть 4 типа массивов: active, master, regular и key для использования одиночных ключей). Как только предоставлены все необходимые подписи — операции из предложения будут исполнены (при условии, что не указан период `review_period_time`), в случае ошибки выполнения повторная попытка будет предпринята при экспирации. Пример:
+
+```js
+var account_login='escrow';
+var active_key='5K...';//активный приватный ключ
+
+var proposal_author='test';//автор предложения
+var proposal_title='payments-14';//идентификатор предложения
+
+var active_approvals_to_add=[];//список аккаунтов подписавших данную транзакцию активным типом доступа для подтверждения предложения
+var active_approvals_to_remove=[];//список аккаунтов для удаления из списка подтвердивших предложение
+var master_approvals_to_add=[];
+var master_approvals_to_remove=[];
+var regular_approvals_to_add=[];
+var regular_approvals_to_remove=[];
+var key_approvals_to_add=[];
+var key_approvals_to_remove=[];
+var extensions=[];
+
+active_approvals_to_add.push(account_login);
+
+viz.broadcast.proposalUpdate(active_key,proposal_author,proposal_title,active_approvals_to_add,active_approvals_to_remove,master_approvals_to_add,master_approvals_to_remove,regular_approvals_to_add,regular_approvals_to_remove,key_approvals_to_add,key_approvals_to_remove,extensions,function(err,result){
+	console.log(err,result);
+});
+```
+
+Предложение может удалить заявитель или любой участник, чья подпись требуется. Для этого достаточно выполнить операцию `proposal_delete` подписав её активным ключом:
+
+```js
+var account_login='escrow2';//участник предложения
+var active_key='5K...';//активный приватный ключ
+
+var proposal_author='test';//автор предложения
+var proposal_title='payments-14';//идентификатор предложения
+
+var extensions=[];
+
+viz.broadcast.proposalDelete(active_key,proposal_author,proposal_title,account_login,extensions,function(err,result){
+		console.log(err,result);
+});
+```
+
+Пример реализации отложенной операции награды созданной тем же аккаунтом в одной транзакции и подписавший транзакцию активным и регулярным ключом:
+
+```js
+var expiration_date=new Date(new Date().getTime() + 20000);//+20 секунд от текущего момента
+var expiration_time=expiration_date.toISOString().substr(0,19);//дата истечения предложения в формате ISO
+var review_period_date=new Date(expiration_date.getTime() - 10000);//дата прекращения приема подписей (минус 10 секунд от даты экспирации)
+var review_period_time=review_period_date.toISOString().substr(0,19);//дата истечения предложения в формате ISO
+
+var login='test';
+var active_wif='5K...';
+var regular_wif='5J...';
+
+var target='committee';//цель операции награждения
+var energy=200;//2%
+var memo='отложенного награждения через proposal';
+
+var regular_public_wif = viz.auth.wifToPublic(regular_wif);//для добавление в key_approvals_to_add через операцию proposal_update
+
+const operations = [
+["proposal_create",{
+	"author": login,
+	"title": 'proposal-award',
+	"memo": login + '-award',
+	"expiration_time": expiration_time,
+	"proposed_operations": [
+	{"op":['award', {'initiator':login,'receiver':target,'energy':200,'custom_sequence':0,'memo':memo}]}],
+	"review_period_time": review_period_time,
+	"extensions": []
+}],
+["proposal_update",{
+	"author": login,
+	"title": 'proposal-award',
+	"active_approvals_to_add": [],
+	"active_approvals_to_remove": [],
+	"owner_approvals_to_add": [],
+	"owner_approvals_to_remove": [],
+	"posting_approvals_to_add": [],
+	"posting_approvals_to_remove": [],
+	"key_approvals_to_add": [regular_public_wif],
+	"key_approvals_to_remove": [],
+	"extensions": []
+}]
+];
+
+viz.broadcast.send({extensions:[],operations},[active_wif,regular_wif],function(err,result){
+	console.log(err,result)
 });
 ```
 
