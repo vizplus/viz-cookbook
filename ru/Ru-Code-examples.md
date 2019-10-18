@@ -1001,6 +1001,95 @@ viz.broadcast.escrowRelease(active_key,account_login,receiver_login,agent_login,
 });
 ```
 
+Чтобы получить информацию об escrow, необходимо вызвать API запрос `get_escrow` плагина `database_api`:
+
+```js
+var account_login='test';
+var escrow_id=1;
+viz.api.getEscrow(account_login,escrow_id,function(err,response){
+	if(!err){
+		//получен ответ
+		console.log(response);
+	}
+	else{
+		//ошибка
+		console.log(err);
+	}
+});
+```
+
+### Восстановление аккаунта
+
+При создании аккаунта создатель записывается в поле аккаунта `recovery` как доверенное лицо для восстановления доступа к аккаунта, в случае его взлома и смены ключей доступа. Блокчейн ведет записи по смене мастер привилегий и хранит их 30 дней. Именно в этот период в 30 дней доверенный аккаунт может создать запрос на восстановление доступа операцией `request_account_recovery`:
+
+```js
+var recovery_account='escrow';
+var active_key='5K...';
+
+var account_to_recover='test';
+var private_key=pass_gen();//генерируем приватный ключ (передаем владельцу аккаунта или согласовываем с ним публичный ключ для мастер привелегии)
+var public_key=viz.auth.wifToPublic(private_key);//получаем публичный ключ из приватного
+
+var new_master_authority={
+	'weight_threshold': 1,
+	'account_auths': [],
+	'key_auths': [
+		[public_key, 1]
+	]
+};//новая мастер привелегия
+var extensions=[];//дополнительное поле, не используется
+viz.broadcast.requestAccountRecovery(active_key,recovery_account,account_to_recover,new_master_authority,extensions,function(err,result) {
+	console.log(err,result);
+});
+```
+
+После того как запрос на смену доступов создан его должен подтвердить аккаунт операцией `recover_account`. Важный момент заключается в том, что транзакцию надо подписать сразу двумя ключами — старым и новым из заявки от доверительного аккаунта, поэтому нужно сформировать транзакцию используя `viz.broadcast.send`:
+
+```js
+var account_login='test';
+
+var new_master_key='5K...';//новый приватный мастер ключ
+var new_master_public_key=viz.auth.wifToPublic(new_master_key);//публичный ключ из приватного мастер ключа (согласован с доверенным аккаунтом)
+var new_master_authority={
+	'weight_threshold': 1,
+	'account_auths': [],
+	'key_auths': [
+		[new_master_public_key, 1]
+	]
+};//новая мастер привелегия
+
+var recent_master_key='5K...';//старый приватный мастер ключ для доказательства идентификации
+var recent_master_public_key=viz.auth.wifToPublic(recent_master_key);//старый публичный мастер ключ
+var recent_master_authority={
+	'weight_threshold': 1,
+	'account_auths': [],
+	'key_auths': [
+		[recent_master_public_key, 1]
+	]
+};//старая мастер привелегия как доказательство идентификации
+var extensions=[];//дополнительное поле, не используется
+
+var operations=['recover_account',['account_to_recover':account_login,'new_master_authority':new_master_authority,'recent_master_authority':recent_master_authority,'extensions':extensions]];
+
+var tx={'extensions':[],operations};
+
+viz.broadcast.send(tx,[recent_master_key,new_master_key],function(err,result) {
+	console.log(err,result);
+});
+```
+
+Поменять доверенный аккаунт для восстановления доступа можно операцией `change_recovery_account`, изменения вступят через 30 дней (чтобы исключить абуз):
+
+```js
+var account_login='test';
+var master_key='5K...';//мастер ключ
+var new_recovery_account='escrow';//новый доверенный аккаунт
+var extensions=[];//дополнительное поле, не используется
+viz.broadcast.changeRecoveryAccount(master_key,account_login,new_recovery_account,extensions,function(err,result) {
+	console.log(err,result);
+});
+```
+
 ## js запросы к публичной ноде VIZ без библиотеки
 
 Если вашему приложению не требуется криптография и подпись транзакций, то вы можете использовать нативные средства для json-rpc запросов через js.
