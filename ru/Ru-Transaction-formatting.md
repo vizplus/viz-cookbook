@@ -68,3 +68,31 @@
 ```
 
 И передать этот JSON через API запрос `broadcast_transaction` плагину `network_broadcast_api`.
+
+## Идентификатор транзакции
+
+В исходном коде ноды указан [тип подписанной транзакции как transaction_id_type](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/protocol/include/graphene/protocol/transaction.hpp#L122), который [в протоколе Graphene записан как fc::ripemd160](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/protocol/include/graphene/protocol/types.hpp#L103). Но практика показывает, что [идентификатор транзакции не является ripemd160 (размер хэша 20 байт)](https://ru.wikipedia.org/wiki/RIPEMD-160), а является [частью sha256 хэша](https://ru.wikipedia.org/wiki/SHA-2) (размер хэша 32 байта). Доподлинно неизвестно, почему так произошло, но можно сделать 2 предположения:
+
+ - Это сделано намеренно, чтобы сократить размерность хэша транзакции (20 байт заместо 32), но увеличивает риск коллизии;
+ - Это непреднамеренный баг, который не нашли до запуска Graphene цепочек, а позже решили не исправлять (предположительно, баг происходит в момент преобразования транзакции через `digest_type::encoder` [в файле протокола `transaction.cpp`](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/protocol/transaction.cpp#L38));
+
+Стоит отметить, что данную ошибку исправили в EOS, что наводит на мысли, что это все таки баг. Как итог идентификатором транзакции является хэш sha256, но обрезанный — 20 первых байт (вместо полных 32 байт).
+
+Например, транзакция в VIZ [из блока 11142739](https://control.viz.world/tools/blocks/11142739/) имеет идентификатор `c84f9e8255859b2083be720cf9b64b3542e4360f`. Сырая транзакция `{"ref_block_num":1612,"ref_block_prefix":2641357798,"expiration":"2019-10-22T05:59:27","operations":[["award",{"initiator":"on1x","receiver":"viz-social-bot","energy":20,"custom_sequence":0,"memo":"telegram:262632819","beneficiaries":[]}]],"extensions":[]}` в hex: `4c06e6eb6f9dbf9aae5d012f046f6e31780e76697a2d736f6369616c2d626f74140000000000000000001274656c656772616d3a3236323633323831390000`.
+
+Хэш sha256 от сырой транзакции: `c84f9e8255859b2083be720cf9b64b3542e4360f0a62e33363bca5d984ee608a`, первые 20 байт которого и являются её идентификатором в блокчейне: `c84f9e8255859b2083be720cf9b64b3542e4360f`.
+
+## Получение ref_block_num и ref_block_prefix для формирования транзакции
+
+Нода блокчейна хранит идентификаторы последних 65537 блоков (подробнее читайте [про концепцию TaPoS в VIZ](Ru-State#Уникальность-транзакций-и-tapos-transactions-as-proof-of-stake)). Обычно разработчики ссылаются на один из последних блоков, обычно, выполняя очередь действий:
+
+ - Получают данные о состоянии системы через API запрос `get_dynamic_global_properties` к плагину `database_api`;
+ - Используя значение поля `head_block_number` минус 3 блока устанавливают для какого блока будут формировать ref_block_num и запрашивать его идентификатор;
+ - Получают идентификатор используемого блока, выполняя API запрос `get_block_header` к плагину `database_api`, запрашивая искомый блок плюс один блок (так как заголовок каждого блока содержит ссылку на идентификатор прошлого блока, искомый идентификатор находится в следующем);
+ - Из идентификатора формируют ref_block_prefix.
+
+Большинство библиотек которые содержат абстракции для упрощения вызовов и трансляции транзакции в блокчейн делают это самостоятельно.
+
+Пример ручного получения `ref_block_num` и `ref_block_prefix` на viz-js-lib можете посмотреть в исходном коде [абстракции подготовки транзакции в самой библиотеке](https://github.com/VIZ-Blockchain/viz-js-lib/blob/master/src/broadcast/index.js#L49).
+
+Пример аналогичного получения `ref_block_num` и `ref_block_prefix` на PHP в [исходном коде библиотеки php-graphene-node-client](https://github.com/t3ran13/php-graphene-node-client/blob/d3521ad5ae8866771adb0cb5ffd4ccadf6c892dc/Tools/Transaction.php#L64).
