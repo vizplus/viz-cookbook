@@ -51,3 +51,4 @@
  - [C# Ditch](https://github.com/Chainers/Ditch) — быстрая и простая библиотека на C# использующая .NET стандарта 2.0;
  - [Elixir API wrapper](https://github.com/metachaos-systems/steemex) — библиотека на Elixir для API-запросов;
  - [Swift Steem](https://github.com/steemit/swift-steem) — библиотека на Swift;
+ - [viz-php-control-panel](https://github.com/VIZ-Blockchain/viz-php-control-panel) — контрольная панель для VIZ с демо-приложением в виде медиа-платформой на PHP (стоит обратить внимание на [класс для выполнения JSON-RPC запросов viz_jsonrpc.php](https://github.com/VIZ-Blockchain/viz-php-control-panel/blob/master/class/viz_jsonrpc.php)).

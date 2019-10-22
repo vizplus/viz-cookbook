@@ -7,8 +7,8 @@
 Именно поэтому рекомендуется избегать пересечения публичной API ноды с требовательными плагинами и работы делегата на том же сервере. Более правильная архитектура сервиса будет отдельный независимый плагин, который имеет доступ к обработке блоков на приватной ноде, сам обрабатывает данные, хранит их в базе данных и позволяет кэшировать запросы. При росте нагрузки всегда можно расширить сервис применяя технологии кластеризации как данных, так и отвечающих узлов (с помощью load balancing).
 
 В данном разделе описаны все доступные плагины VIZ, предоставляющие пользователям доступ через API. Вы можете сами изучить API того или иного плагин, если будете следовать следующей инструкции:
- - Открыть основной заголовочный файл плагина ([пример для database_api](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/plugins/database_api/include/graphene/plugins/database_api/plugin.hpp#L98)), изучить DEFINE_API_ARGS (название API метода, тип возвращаемого значения);
- - Открыть основной файл плагина ([пример для database_api](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/plugins/database_api/api.cpp#L211)), изучить DEFINE_API (проверка параметров запроса, CHECK_ARGS_COUNT, формирование возвращаемого значения определенного типа);
+ - Открыть основной заголовочный файл плагина ([пример для database_api](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/plugins/database_api/include/graphene/plugins/database_api/plugin.hpp#L98)), изучить `DEFINE_API_ARGS` (название API метода, тип возвращаемого значения);
+ - Открыть основной файл плагина ([пример для database_api](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/plugins/database_api/api.cpp#L211)), изучить `DEFINE_API` (проверка параметров запроса, `CHECK_ARGS_COUNT`, формирование возвращаемого значения определенного типа);
  - Изучить `plugin_initialize`, который может обрабатывать `boost::program_options::variables_map` для более тонкой настройки плагина через конфигурационный файл ноды.
 
 ***
