@@ -13,6 +13,10 @@
  - **operations** — массив операций находящихся в транзакции, бинарное представление каждой операции состоит из всех аттрибутов операции согласно протоколу;
  - **extensions** — массив служебных расширений транзакции (не используется, поэтому в бинарном формате представляет собой hex значение массива без элементов: `00`);
 
+## Зачем необходим chain_id
+
+Открытый и свободный код блокчейн систем основанных на Graphene позволяют запускать новые цепочки, как без изменений, так и полностью переработанные с собственными механиками и экономикой. Более того, множество проектов запускают публичные тестовые цепочки для проверки изменений. Чтобы ноды не путались и транзакции из одной сети нельзя было применять в форке (или цепи с аналогичными аккаунтами и ключами) — существует идентификатор цепи, который присутствует как метка в каждой транзакции и операции подписи.
+
 ## Формат ключей
 
 Приватные и публичные ключи в VIZ находятся по [алгоритму ESDCA](https://ru.wikipedia.org/wiki/ECDSA) ([теория](https://habr.com/ru/post/188958/)), и используют криптографию для проверки подписей набора данных. Многие разработчики не являясь специалистами в криптографии просто используют специализированные библиотеки, не вдаваясь в подробности.
@@ -96,3 +100,79 @@
 Пример ручного получения `ref_block_num` и `ref_block_prefix` на viz-js-lib можете посмотреть в исходном коде [абстракции подготовки транзакции в самой библиотеке](https://github.com/VIZ-Blockchain/viz-js-lib/blob/master/src/broadcast/index.js#L49).
 
 Пример аналогичного получения `ref_block_num` и `ref_block_prefix` на PHP в [исходном коде библиотеки php-graphene-node-client](https://github.com/t3ran13/php-graphene-node-client/blob/d3521ad5ae8866771adb0cb5ffd4ccadf6c892dc/Tools/Transaction.php#L64).
+
+## Порядок сериализации данных в операции
+
+Все операции и их параметры записаны в протоколе VIZ и находятся [в файле chain_operations.hpp](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/protocol/include/graphene/protocol/chain_operations.hpp).
+
+Именно там можно изучить типы параметров и их требуемый порядок в операции. **Внимание!** Порядок параматров в структуре операции не совпадает с порядком параметров в самой операции. Рассмотрим пример на операции `escrow_transfer_operation`, структура операции (часто перед операцией присутствует комментарий её описывающий, ):
+
+```cpp
+/**
+ *  The purpose of this operation is to enable someone to send money contingently to
+ *  another individual. The funds leave the *from* account and go into a temporary balance
+ *  where they are held until *from* releases it to *to* or *to* refunds it to *from*.
+ *
+ *  In the event of a dispute the *agent* can divide the funds between the to/from account.
+ *  Disputes can be raised any time before or on the dispute deadline time, after the escrow
+ *  has been approved by all parties.
+ *
+ *  This operation only creates a proposed escrow transfer. Both the *agent* and *to* must
+ *  agree to the terms of the arrangement by approving the escrow.
+ *
+ *  The escrow agent is paid the fee on approval of all parties. It is up to the escrow agent
+ *  to determine the fee.
+ *
+ *  Escrow transactions are uniquely identified by 'from' and 'escrow_id', the 'escrow_id' is defined
+ *  by the sender.
+ */
+struct escrow_transfer_operation : public base_operation {
+    account_name_type from;
+    account_name_type to;
+    account_name_type agent;
+    uint32_t escrow_id = 30;
+
+    asset token_amount = asset(0, TOKEN_SYMBOL);
+    asset fee;
+
+    time_point_sec ratification_deadline;
+    time_point_sec escrow_expiration;
+
+    string json_metadata;
+
+    void validate() const;
+
+    void get_required_active_authorities(flat_set<account_name_type> &a) const {
+        a.insert(from);
+    }
+};
+```
+
+Порядок параметров в операции задается уже в конце файла методом:
+
+```cpp
+FC_REFLECT((graphene::protocol::escrow_transfer_operation), (from)(to)(token_amount)(escrow_id)(agent)(fee)(json_metadata)(ratification_deadline)(escrow_expiration));
+```
+
+Кроме описания структуры операции есть еще обработка параметров в методе `validate`, найти который можно [в файле chain_operations.cpp](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/protocol/chain_operations.cpp#L231):
+
+```cpp
+void escrow_transfer_operation::validate() const {
+    validate_account_name(from);
+    validate_account_name(to);
+    validate_account_name(agent);
+    FC_ASSERT(fee.amount >= 0, "fee cannot be negative");
+    FC_ASSERT(token_amount.amount >=
+              0, "tokens amount cannot be negative");
+    FC_ASSERT(from != agent &&
+              to != agent, "agent must be a third party");
+    FC_ASSERT(fee.symbol == TOKEN_SYMBOL, "fee must be TOKEN_SYMBOL");
+    FC_ASSERT(token_amount.symbol ==
+              TOKEN_SYMBOL, "amount must be TOKEN_SYMBOL");
+    FC_ASSERT(ratification_deadline <
+              escrow_expiration, "ratification deadline must be before escrow expiration");
+    validate_json_metadata(json_metadata);
+}
+```
+
+Большинство операций проверяют наличие подписи соответствующих полномочий, например в структуре `escrow_transfer_operation` присутствует проверка подписи инициатора операции (поле `from`) активных полномочий в методе `get_required_active_authorities`.
