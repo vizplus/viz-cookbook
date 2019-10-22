@@ -1222,6 +1222,41 @@ viz.broadcast.send({extensions:[],operations},[active_wif,regular_wif],function(
 });
 ```
 
+## Подпись данных с помощью приватного ключа и проверка подписи с помощью публичного
+
+Чтобы подписать данные приватным ключом (метод `viz.auth.signature.sign`, для поиска каноничной подписи необходимо добавить nonce, который будет находиться в данных на подпись) и проверить подпись публичным ключом (метод `viz.auth.signature.verifyData`), можно воспользоваться стандартными методами `viz-js-lib`:
+
+```js
+var private_key='5KRLZitDd5c9uZzDgTMF4se4eVewENtZ29GbCuKwbT3msRbtLgi';
+var public_key='VIZ6LWhhUzKmYM5VcxtC2FpEjzr71imfb7DeGA9yodeqnvtP2SYjA';
+
+var invalid_public_key='VIZ65kiW3JsxsF7NCabAuSJUk8Efhx5PW6cbgSS5uuZpbkSTpSjn6';
+
+var data={data:"data signature check!",nonce:0};
+var nonce=0;
+var data_with_nonce='';
+var signature='';
+
+function auth_signature_check(hex){//проверка на каноничность подписи
+	if('1f'==hex.substring(0,2)){
+		return true;
+	}
+	return false;
+}
+
+while(!auth_signature_check(signature)){
+	data.nonce=nonce;
+	data_with_nonce=JSON.stringify(data);
+	signature=viz.auth.signature.sign(data_with_nonce,private_key).toHex();
+	nonce++;
+}
+console.log('data with nonce',data_with_nonce);
+console.log('signature',signature);
+
+console.log('check by public_key',viz.auth.signature.verifyData(data_with_nonce,viz.auth.signature.fromHex(signature),public_key));
+console.log('check by invalid_public_key',viz.auth.signature.verifyData(data_with_nonce,viz.auth.signature.fromHex(signature),invalid_public_key));
+```
+
 ## js запросы к публичной ноде VIZ без библиотеки
 
 Если вашему приложению не требуется криптография и подпись транзакций, то вы можете использовать нативные средства для json-rpc запросов через js.
