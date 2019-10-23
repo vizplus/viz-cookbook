@@ -5,13 +5,13 @@
 ***
 
 Содержение:
-* [Основные понятия](Ru-Basic-concept)
-* [Экономика](Ru-Economy)
-* [Типы нод](Ru-Node-types)
-* [Операции и их типы](Ru-Operations)
-* [Объекты и структуры в VIZ](Ru-Object-structures)
-* [Состояние (стэйт) системы](Ru-State)
-* [Плагины и их API](Ru-Plugins-API)
-* [Библиотеки для работы с VIZ](Ru-Libraries)
-* [Примеры кода](Ru-Code-examples)
-* [Формирование транзакций](Ru-Transaction-formatting)
+* [Основные понятия](/ru/basic-concept.md)
+* [Экономика](/ru/economy.md)
+* [Типы нод](/ru/node-types.md)
+* [Операции и их типы](/ru/operations.md)
+* [Объекты и структуры в VIZ](/ru/object-structures.md)
+* [Состояние (стэйт) системы](/ru/state.md)
+* [Плагины и их API](/ru/plugins-api.md)
+* [Библиотеки для работы с VIZ](/ru/libraries.md)
+* [Примеры кода](/ru/code-examples.md)
+* [Формирование транзакций](/ru/transaction-formatting.md)
