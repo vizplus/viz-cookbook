@@ -21,7 +21,7 @@
 
 Таким образом по умолчанию 20% от годовой эмиссии направляются делегатам, 40% в комитет (где участники сети голосуют за финансирование инициатив), 40% в фонд наград (которым управляют все участники сети).
 
-> Актуальные значения можно узнать [выполнив API запрос `get_chain_properties` к плагину `database_api`](/ru/plugins-api.md#database_api) или [через обозреватель сети на сайте control.viz.world](https://control.viz.world/tools/blocks/)
+> Актуальные значения можно узнать [выполнив API запрос `get_chain_properties` к плагину `database_api`](plugins-api.md#database_api) или [через обозреватель сети на сайте control.viz.world](https://control.viz.world/tools/blocks/)
 
 ## Комитет
 
