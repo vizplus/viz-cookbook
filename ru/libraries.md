@@ -20,7 +20,7 @@
  - Упрощенный конструктор транзакций для операций;
  - Функции обратного вызова для запросов;
 
-[Документация viz-js-lib на английском языке](https://github.com/VIZ-Blockchain/viz-js-lib/tree/master/doc) доступна на GitHub. Примеры для часто использумых операций смотрите в [разделе Примеры кода](Ru-Code-examples#viz-js-lib).
+[Документация viz-js-lib на английском языке](https://github.com/VIZ-Blockchain/viz-js-lib/tree/master/doc) доступна на GitHub. Примеры для часто использумых операций смотрите в [разделе Примеры кода](/ru/code-examples.md#viz-js-lib).
 
 ## Python
 
