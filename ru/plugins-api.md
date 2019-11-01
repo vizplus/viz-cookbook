@@ -160,6 +160,38 @@ rpc-endpoint = 0.0.0.0:8081
   }
 ]
 ```
+  - **get_accounts_on_sale** — возвращает список аккаунтов выставленных на продажу, имеет два параметра: from (смещение в результирующем списке) и limit (количество записей, не может быть больше 1000);
+
+Пример:
+```json
+{"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_accounts_on_sale",[0,1000]]}
+```
+
+Ответ:
+```json
+[
+  {"account":"btc","account_seller":"ae","account_offer_price":"5000.000 VIZ"},
+  {"account":"press","account_seller":"on1x","account_offer_price":"10000.000 VIZ"}
+]
+```
+ - **get_subaccounts_on_sale** — возвращает список сабаккаунтов выставленных на продажу, имеет два параметра: from (смещение в результирующем списке) и limit (количество записей, не может быть больше 1000);
+
+Пример:
+```json
+{"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_subaccounts_on_sale",[0,1000]]}
+```
+
+Ответ:
+```json
+[
+  {"account":"com","subaccount_seller":"ae","subaccount_offer_price":"10.000 VIZ"},
+  {"account":"digital","subaccount_seller":"on1x","subaccount_offer_price":"100.000 VIZ"},
+  {"account":"blog","subaccount_seller":"on1x","subaccount_offer_price":"100.000 VIZ"},
+  {"account":"new.romankr","subaccount_seller":"romankr","subaccount_offer_price":"10.000 VIZ"},
+  {"account":"romankr1","subaccount_seller":"romankr","subaccount_offer_price":"10.000 VIZ"},
+  {"account":"viz","subaccount_seller":"committee","subaccount_offer_price":"10000.000 VIZ"}
+]
+```
  - **get_block** — возвращает информацию о блоке по его номеру;
 
 Пример:
