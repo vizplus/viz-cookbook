@@ -30,9 +30,11 @@
 
 ## PHP
 
-Сложность разработки поддержки VIZ на PHP в том, что нет стандартных библиотек для работы с криптографией. Поэтому необходим полный доступ к серверу, чтобы собрать secp256k1 для PHP и включить поддержку [GMP](https://ru.wikipedia.org/wiki/GNU_Multi-Precision_Library). Это накладывает определенные ограничения на разработчиков (требует опыт в администрировании).
+После перехода на адаптированные библиотеки BigNumber и Elliptic Curve стало доступным использовать криптографию без сборки secp256k1 для PHP и включения поддержки [GMP](https://ru.wikipedia.org/wiki/GNU_Multi-Precision_Library).
 
-Несмотря на это, существует [библиотека php-graphene-node-client с поддержкой VIZ](https://github.com/t3ran13/php-graphene-node-client), установка которого возможна через Docker.
+[Библиотека viz-php-lib](https://github.com/VIZ-Blockchain/viz-php-lib) поддерживает JsonRPC, работу с ключами, формирование транзакций, шифрование сообщение через shared key (совместимое с viz-js-lib), присутствуют примеры, поддержка PSR-4 и установка без дополнительных зависимостей (all-in-one).
+
+[Библиотека php-graphene-node-client с поддержкой VIZ](https://github.com/t3ran13/php-graphene-node-client), установка которого возможна через Composer.
 
 ## GO
 
