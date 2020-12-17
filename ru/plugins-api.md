@@ -58,6 +58,106 @@ rpc-endpoint = 0.0.0.0:8081
  - **broadcast_transaction_with_callback** — то же, что и broadcast_transaction_synchronous, кроме проверки транзакции на валидность перед передачей в пул транзакций и регистрации метода обратного вызова (callback).
 
 
+## custom_protocol_api
+
+ - **get_account** — возвращает аккаунт по логину с опциональной возможностью запросить custom_protocol_id (опционально, перезаписывает custom_sequence и custom_sequence_block_num если запрошенный cutsom protocol id найден в истории ноды);
+
+Пример:
+```json
+{"id":1,"method":"call","jsonrpc":"2.0","params":["custom_protocol_api","get_account",[["readdle","V"]]]}
+```
+
+Ответ:
+```json
+{
+  "id": 116,
+  "name": "readdle",
+  "master_authority": {
+    "weight_threshold": 1,
+    "account_auths": [],
+    "key_auths": [
+      [
+        "VIZ7PZqJj3UvV3kymCWHnwn9PxRGgt9z6MDzyEeXCFVr6X9XmoBCY",
+        1
+      ]
+    ]
+  },
+  "active_authority": {
+    "weight_threshold": 1,
+    "account_auths": [],
+    "key_auths": [
+      [
+        "VIZ6CmEqBAdWu1MGrSeTPwSG9yKwLwBPEuVBhzbKBMFP2aYTomCCN",
+        1
+      ]
+    ]
+  },
+  "regular_authority": {
+    "weight_threshold": 1,
+    "account_auths": [],
+    "key_auths": [
+      [
+        "VIZ8PqkhFxxifidH6688oSZHYPGsXMhRVE9xhvh6N65XkYRg74pMR",
+        1
+      ]
+    ]
+  },
+  "memo_key": "VIZ7Lo593wA3SwFwpiHYfm3kWw4BwgrcBsYt1UDyZW4J3dd5GWuab",
+  "json_metadata": "{\"profile\":{\"nickname\":\"Readdle.me\",\"about\":\"RU: Децентрализованная Социальная Сеть, где пользователь выступает в роли Оракула, обрабатывающего социальную активность интересных ему аккаунтов. Работает на блокчейне VIZ с использованием системы награждений Социальным Капиталом VIZ (Ƶ).\",\"avatar\":\"https://readdle.me/readdle-avatar.png\",\"services\":{\"telegram\":\"readdle_me\"},\"interests\":[\"ru\",\"welcome\"],\"pinned\":\"viz://@readdle/22099872/\"}}",
+  "proxy": "",
+  "referrer": "",
+  "last_master_update": "1970-01-01T00:00:00",
+  "last_account_update": "2020-11-05T19:23:33",
+  "created": "2018-09-29T18:25:27",
+  "recovery_account": "in",
+  "last_account_recovery": "1970-01-01T00:00:00",
+  "subcontent_count": 0,
+  "vote_count": 0,
+  "content_count": 0,
+  "awarded_rshares": 0,
+  "custom_sequence": 4,
+  "custom_sequence_block_num": 22897215,
+  "energy": 10000,
+  "last_vote_time": "2018-09-29T18:25:27",
+  "balance": "0.000 VIZ",
+  "vesting_shares": "24.102958 SHARES",
+  "delegated_vesting_shares": "0.000000 SHARES",
+  "received_vesting_shares": "10.056015 SHARES",
+  "vesting_withdraw_rate": "0.000000 SHARES",
+  "next_vesting_withdrawal": "1969-12-31T23:59:59",
+  "withdrawn": 0,
+  "to_withdraw": 0,
+  "withdraw_routes": 0,
+  "curation_rewards": 0,
+  "posting_rewards": 0,
+  "receiver_awards": 24103,
+  "benefactor_awards": 0,
+  "proxied_vsf_votes": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "witnesses_voted_for": 0,
+  "witnesses_vote_weight": 0,
+  "last_post": "1970-01-01T00:00:00",
+  "last_root_post": "1970-01-01T00:00:00",
+  "average_bandwidth": "16919020937",
+  "lifetime_bandwidth": "52767000000",
+  "last_bandwidth_update": "2020-12-03T11:55:45",
+  "witness_votes": [],
+  "valid": true,
+  "account_seller": "",
+  "account_offer_price": "0.000 VIZ",
+  "account_on_sale": false,
+  "account_on_sale_start_time": "1970-01-01T00:00:00",
+  "subaccount_seller": "",
+  "subaccount_offer_price": "0.000 VIZ",
+  "subaccount_on_sale": false
+}
+```
+
+
 ## database_api
 
  - **get_account_count** — возвращает количество аккаунтов в сети;
@@ -154,13 +254,14 @@ rpc-endpoint = 0.0.0.0:8081
     "account_seller": "",
     "account_offer_price": "0.000 VIZ",
     "account_on_sale": false,
+    "account_on_sale_start_time": "1970-01-01T00:00:00",
     "subaccount_seller": "",
     "subaccount_offer_price": "0.000 VIZ",
     "subaccount_on_sale": false
   }
 ]
 ```
-  - **get_accounts_on_sale** — возвращает список аккаунтов выставленных на продажу, имеет два параметра: from (смещение в результирующем списке) и limit (количество записей, не может быть больше 1000);
+ - **get_accounts_on_sale** — возвращает список аккаунтов выставленных на продажу, имеет два параметра: from (смещение в результирующем списке) и limit (количество записей, не может быть больше 1000);
 
 Пример:
 ```json
@@ -670,6 +771,7 @@ rpc-endpoint = 0.0.0.0:8081
     "account_seller": "",
     "account_offer_price": "0.000 VIZ",
     "account_on_sale": false,
+    "account_on_sale_start_time": "1970-01-01T00:00:00",
     "subaccount_seller": "",
     "subaccount_offer_price": "0.000 VIZ",
     "subaccount_on_sale": false
