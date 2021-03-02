@@ -40,6 +40,10 @@
 
 [Библиотека viz-go-lib](https://github.com/VIZ-Blockchain/viz-go-lib) отлично подходит для API запросов и изучения формирования транзакций. К сожалению документации по библиотеке нет, как и примеров с отдельными операциями.
 
+## Swift 
+
+[Библиотека viz-swift-lib](https://github.com/VIZ-Blockchain/viz-swift-lib) — библиотека на Swift, установка которой возможна через [Swift Package Manager](https://swiftpackageindex.com/VIZ-Blockchain/viz-swift-lib).
+
 ## Dart
 
 [Криптографическая библиотека viz_dart_ecc](https://github.com/VizTower/viz_dart_ecc) — позволяет формировать публичный ключ из приватного, подписывать данные, верифицировать подпись.
@@ -52,5 +56,4 @@
 
  - [C# Ditch](https://github.com/Chainers/Ditch) — быстрая и простая библиотека на C# использующая .NET стандарта 2.0;
  - [Elixir API wrapper](https://github.com/metachaos-systems/steemex) — библиотека на Elixir для API-запросов;
- - [Swift Steem](https://github.com/steemit/swift-steem) — библиотека на Swift;
  - [viz-php-control-panel](https://github.com/VIZ-Blockchain/viz-php-control-panel) — контрольная панель для VIZ с демо-приложением в виде медиа-платформой на PHP (стоит обратить внимание на [класс для выполнения JSON-RPC запросов viz_jsonrpc.php](https://github.com/VIZ-Blockchain/viz-php-control-panel/blob/master/class/viz_jsonrpc.php)).
