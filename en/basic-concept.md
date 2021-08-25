@@ -14,46 +14,49 @@ Software that communicates with other nodes of the network, accepts and transmit
 
 The VIZ uses the account model. Accounts are part of a common namespace, store tokens and public access keys.
 
-## Ключи и типы полномочий
+## Keys and types of permissions
 
-Ключи бывают приватные и публичные. С помощью приватного ключа можно подписать сообщение. С помощью публичного ключа можно доказать факт подписи сообщения. Каждому приватному ключу соответствует единственный публичный ключ. Именно публичные ключи хранятся в блокчейн-системе. Используя их, ноды могут удостовериться, что то или иное действие инициировал владелец приватного ключа (соответствующего публичному ключу).
+There are private and public keys. You can use a private key to sign a message.  Using a public key, you can prove the fact of signing a message. Each private key corresponds to a single public key. And these are the public keys that are stored in the blockchain system. Using them, nodes can make sure that this or that action was initiated by the owner of the private key (corresponding to the public key).
 
-Аккаунт в блокчейне VIZ содержит три типа полномочий:
-- **master** — отвечает за право владения аккаунтом;
-- **active** — отвечает за управление токенами аккаунта;
-- **regular** — отвечает за обычные операции (например, награждение).
+An account in the VIZ blockchain contains three types of permissions:
 
-Каждый тип полномочий может содержать список доверенных аккаунтов, которые могут подписать и выполнить операцию данного типа доступа от лица исходного аккаунта. Также каждый тип полномочий может содержать один или несколько публичных ключей разного веса (для возможности управления аккаунтом через multisig, когда аккаунтом владеют несколько пользователей).
+- **master** - responsible for the ownership of the account;
+- **active** - responsible for managing account tokens;
+- **regular** - responsible for normal operations (for example, rewarding).
 
-Обычно аккаунт содержит либо единый ключ для всех типов полномочий, либо по одному ключу на каждый тип полномочий.
-Аккаунт дополнительно содержит memo-ключ, который используют для кодирования сообщений между участниками сети.
+Each type of authority can contain a list of trusted accounts that can sign and perform an operation of this type of access on behalf of the source account. Also, each type of authority can contain one or more public keys of different weights (for the ability to manage an account via multisig, when several users own an account).
 
-## Токены VIZ и доля сети SHARES
+Usually, an account contains either a single key for all types of permissions, or one key for each type of permissions.
+The account additionally contains a memo key, which is used to encode messages between network participants.
 
-Токен VIZ является передаваемым (переносимым), он не участвует в управлении, но может быть переведен в социальный капитал (SHARES). Данную операцию в других блокчейнах часто называют стейкинг (staking). Аккаунт, владеющий социальным капиталом, может принимать участие в управлении.
+## VIZ tokens and share of the SHARES network
 
-## Делегаты
+The VIZ token is transferable, it does not participate in management, but can be transferred to social capital (SHARES). This operation is often called stacking in other blockchains. An account that owns social capital can participate in the management.
 
-Аккаунт может заявить о своем намерении быть делегатом. Делегат (witness) избирается участниками сети (через процедуру голосования) и участвует в очереди делегатов для подписания блоков.
+## Delegates
 
-Участник сети может проголосовать как за одного, так и за нескольких делегатов, которые разделят между собой вес его голоса поровну. Чем больше социального капитала проголосует за делегата, тем выше он будет в очереди делегатов для подписания блоков.
+An account can declare its intention to be a delegate. The delegate (witness) is elected by the network participants (through the voting procedure) and participates in the queue of delegates for signing blocks.
 
-Очередь делегатов состоит из 21 слота: 11 мест зафиксированы за делегатами, набравшими наибольшее количество голосов, остальные 10 мест занимают делегаты в плавающей конкурирующей очереди согласно набранным голосам.
+A member of the network can vote for either one or several delegates, who will share the weight of his vote equally among themselves. The more social capital votes for a delegate, the higher he will be in the queue of delegates for signing blocks.
 
-## Транзакции
+The queue of delegates consists of 21 slots: 11 of them are fixed for the delegates who received the most votes, the remaining 10 seats are occupied by delegates in a floating competing queue according to the votes collected.
 
-Пользователи создают операции (действия аккаунта в сети, подробнее в разделе [Операции и их типы](operations.md)), формируют из них транзакцию, которую подписывают приватным ключом аккаунта нужного типа полномочий.
+## Transactions
 
-## Блоки
+Users 
 
-Ноды делегатов получают от всех узлов сети транзакции, которые отправили в сеть пользователи. Делегат, чья очередь подошла подписывать блок, формирует из очереди транзакций блок и отправляет его другим узлам сети. Новый блок формируется каждые 3 секунды. Все узлы сети проверяют подписи делегата, подписи пользователей в транзакциях и применяют операции по очереди. Таким образом формируется состояние системы (подробнее в разделе [Состояние (стэйт) системы](state.md)).
+Users create operations (account actions in the network, for more information, see the section [Operations and their types](operations.md)), form a transaction from them, which is signed with the private key of the account of the desired type of authority.
 
-## Консенсус
+## Blocks
 
-VIZ использует консенсус Fair DPoS (Delegated Proof of Stake). Ноды хранят два состояния системы: необратимое и обратимое. Необратимость (irreversible) наступает тогда, когда в самой длинной цепочке блоков подтвердят свое участие в ней примерно 15 делегатов (75% от количества делегатов в очереди). После этого нода не может откатить более ранние транзакции, таким образом наступает финальность состояния сети (finality).
+Delegate nodes receive transactions from all nodes of the network that users have sent to the network. The delegate whose turn it is to sign the block forms a block from the transaction queue and sends it to other network nodes. A new block is formed every 3 seconds. All nodes of the network check the delegate signatures, user signatures in transactions and apply operations in turn. This is how the state of the system is formed (for more information, see the section [State of the system](state.md)).
 
-В обычном состоянии необратимость наступает за 15 блоков (около 45 секунд). Поэтому все важные операции, требующие проверки, могут получить подтверждение только достигнув необратимости.
+## Consensus
 
-## Плагины
+The VIZ uses the Fair DPoS (Delegated Proof of Stake) consensus. Nodes store two states of the system: irreversible and reversible. Irreversibility occurs when approximately 15 delegates (75% of the number of delegates in the queue) confirm their participation in the longest chain of blocks. After that, the node can't roll back earlier transactions, so the finality of the network state occurs.
 
-Плагины расширяют возможности ноды, могут обрабатывать отдельные операции и управлять собственными структурами данных. Есть как обязательные плагины (отвечающие за соединение между узлами сети), так и необязатальные (например, история операций аккаунтов, подробнее в разделе [Плагины и их API](plugins-api.md)).
+In the normal state, irreversibility occurs in 15 blocks (about 45 seconds). Therefore, all important operations that require verification can be confirmed only after reaching irreversibility.
+
+## Plugins
+
+Plugins extend the capabilities of the node, can process individual operations and manage their own data structures. There are both mandatory plugins (responsible for connecting between network nodes) and optional ones (for example, the history of account operations, for more information, see the section [Plugins and their API](plugins-api.md)).

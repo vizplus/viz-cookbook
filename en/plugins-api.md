@@ -1,73 +1,74 @@
-# Плагины и их API
+# Plugins and their API
 
-Плагины представляют собой универсальный инструмент расширения ноды и её возможностей. Часть из них лишь отдают данные, подготавливают индексы, отвечают на сложные запросы пользователей с фильтрацией данных, часть из них обрабатывают custom операции и могут предоставлять совершенно отдельный сервис. Например, можно написать плагин, который после платной подписки первого уровня будет формировать уведомления о важных действиях в блокчейне или предоставлять сервис личных сообщений. Публичный плагин не всегда означает «бесплатный». И «бесплатный» не всегда значит открытый (в плане исходного кода).
+Plugins are a universal tool for expanding the node and its capabilities. Some of them only give data, prepare indexes, respond to complex user requests with data filtering, some of them process custom operations and can provide a completely separate service. For example, you can write a plugin that, after a paid subscription of the first level, will generate notifications about important actions in the blockchain or provide a personal message service. A public plugin does not always mean "free". And "free" does not always mean open (in terms of source code).
 
-Если обратиться к логическому изучению цепочки нода-сервисы-API, то мы увидим неприятную ситуацию, когда публичные API могут создавать проблемы для функционирования самой ноды. Такое может возникнуть при большом потоке запросов к API сервиса, тем более в том случае, если плагин, предоставляющий сервис, работает как раз с нодой блокчейна. Пропускная способность от пользовательских запросов (или запросов злоумышленника при желании произвести DDOS сервиса) может помешать самой ноде обмениваться данными с другими узлами. Если API запросы нагружают CPU или используют большие выборки по индексам, долго подготавливают данные для ответа — возникает проблема не только с сервисом, который начинает тормозить, но и с функционированием ноды.
+If we turn to the logical study of the node-services-API chain, we will see an unpleasant situation when public APIs can create problems for the functioning of the node itself. This can occur with a large flow of requests to the service API, especially if the plugin that provides the service works just with the blockchain node. The bandwidth from user requests (or requests from an attacker if he wants to perform a DDOS attack on the service) can prevent the node itself from exchanging data with other nodes. If API requests load the CPU or use large samples of indexes, take a long time to prepare data for a response — there is a problem not only with the service, which begins to slow down, but also with the functioning of the node.
 
-Именно поэтому рекомендуется избегать пересечения публичной API ноды с требовательными плагинами и работы делегата на том же сервере. Более правильной архитектурой сервиса будет являться отдельный независимый плагин, имеющий доступ к обработке блоков на приватной ноде, сам обрабатывает данные, хранит их в базе данных и позволяет кэшировать запросы. При росте нагрузки всегда можно расширить сервис применяя технологии кластеризации как данных, так и отвечающих узлов (с помощью load balancing).
+That is why it is recommended to avoid the intersection of the public API node with demanding plugins and the work of the delegate on the same server. A more correct architecture of the service will be a separate independent plugin that has access to processing blocks on a private node, processes the data itself, stores it in a database and allows caching requests. When the load increases, you can always expand the service using clustering technologies for both data and responding nodes (using load balancing).
 
-В данном разделе описаны все доступные плагины VIZ, предоставляющие пользователям доступ через API. Вы можете сами изучить API того или иного плагин, если будете следовать следующей инструкции:
- - Открыть основной заголовочный файл плагина ([пример для database_api](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/plugins/database_api/include/graphene/plugins/database_api/plugin.hpp#L98)), изучить `DEFINE_API_ARGS` (название API метода, тип возвращаемого значения);
- - Открыть основной файл плагина ([пример для database_api](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/plugins/database_api/api.cpp#L211)), изучить `DEFINE_API` (проверка параметров запроса, `CHECK_ARGS_COUNT`, формирование возвращаемого значения определенного типа);
- - Изучить `plugin_initialize`, который может обрабатывать `boost::program_options::variables_map` для более тонкой настройки плагина через конфигурационный файл ноды.
+This section describes all the available VIZ plugins that provide users with access via the API. You can learn the API of a particular plugin yourself if you follow the following instructions:
+
+- Open the main header file of the plugin ([example for database_api](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/plugins/database_api/include/graphene/plugins/database_api/plugin.hpp#L98)), examine `DEFINE_API_ARGS` (API method name, return value type);
+- Open the main plugin file ([example for database_api](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/plugins/database_api/api.cpp#L211)), examine the `DEFINE_API` (checking the request parameters, `CHECK_ARGS_COUNT`, forming a return value of a certain type);
+- Examine `plugin_initialize`, which can handle `boost::program_options::variables_map` for more fine-tuning of the plugin through the node configuration file.
 
 ***
 
-## Протокол запросов
+## Request protocol
 
-Все запросы должны быть сформированы в JSON и выполнены через RPC. Транспортный протокол зависит от настройки ноды, возможны варианты как JSON-RPC через стандартные HTTP запросы, так и через WebSocket.
+All requests must be generated in JSON and executed via RPC. The transport protocol depends on the configuration of the node, there are options for both JSON-RPC via standard HTTP requests, and via WebSocket.
 
-Для этого в конфигурационном файле ноды должны быть подключены плагины: json_rpc, webserver. Чтобы принимать транзакции от пользователей также должен быть включен плагин network_broadcast_api. Настройки для портов:
+To do this, the following plugins must be connected in the node's configuration file: json_rpc, web server. To accept transactions from users, the network_broadcast_api plugin must also be enabled. Port settings:
 
 ```
-# Количество потоков для клиентов rpc. Оптимальное значение *количество ядер минус 1*
+# The number of threads for rpc clients. Optimal value *number of cores minus 1*
 webserver-thread-pool-size = 2
 
-# IP:PORT для HTTP подключений
+# IP:PORT for HTTP connections
 webserver-http-endpoint = 0.0.0.0:8090
 
-# IP:PORT для WebSocket подключений
+# IP:PORT for WebSocket connects
 webserver-ws-endpoint = 0.0.0.0:8091
 
-# IP:PORT для HTTP и WebSocket соединений (одновременная обработка двух типов подключений)
+# IP:PORT for HTTP and WebSocket connections (simultaneous processing of two types of connections)
 rpc-endpoint = 0.0.0.0:8081
 ```
 
-Чтобы обрабатывать запросы с поддержкой SSL, необходимо пробросить используемые порты через проксирующий сервер (например, nginx или apache), тогда станут возможными запросы через https/wss.
+To process requests with SSL support, it is necessary to forward the ports used through a proxy server (for example, nginx or apache), then requests via https/wss will become possible.
 
-## Формирование API запроса
+## Creating an API request
 
-Правила формирования запросов к публичной ноде довольно простые:
+The rules for generating requests to a public node are quite simple:
 
 ```
 {"id":REQUEST_ID,"jsonrpc":"2.0","method":"call","params":["PLUGIN_NAME","PLUGIN_API_METHOD",[ARGS]]}
 ```
 
- - REQUEST_ID — номер запроса, носит необязательный характер (можно все запросы нумеровать единицей), но при соединении через web sockets (ws) позволяет ассоциировать ответы по запросам с аналогичным id;
- - PLUGIN_NAME — название плагина, к которому выполняется запрос (например: database_api, committee_api);
- - PLUGIN_API_METHOD — название метода, обрабатывающего запрос (например: get_accounts из database_api);
- - ARGS — массив упорядоченных параметров, передаваемый методу плагина.
+ - REQUEST_ID — the request number, it is optional (you can number all requests with 1), but when connecting via web sockets (ws), it allows you to associate responses to requests with a similar id;
+ - PLUGIN_NAME — the name of the plugin to which the request is being made (for example: database_api, committee_api);
+ - PLUGIN_API_METHOD — the name of the method that processes the request (for example: get_accounts from database_api);
+ - ARGS — an array of ordered parameters passed to the plugin method.
 
 ## network_broadcast_api
 
-Плагин, отвечающий за прием и рассылку между узлами сети подписанных блоков и транзакций
+A plugin responsible for receiving and sending signed blocks and transactions between network nodes
 
- - **broadcast_block** — передача подписанного блока (signed_block) другим узлам сети;
- - **broadcast_transaction** — передача подписанной транзакции (signed_transaction) другим узлам сети;
- - **broadcast_transaction_synchronous** — передача подписанной транзакции (signed_transaction) другим узлам сети (ждет вхождения в блок и возвращает хэш транзакции, номер блока и номер транзакции в блоке, или возвращает false в случае истечения срока действия транзакции);
- - **broadcast_transaction_with_callback** — то же, что и broadcast_transaction_synchronous, кроме проверки транзакции на валидность перед передачей в пул транзакций и регистрации метода обратного вызова (callback).
+ - **broadcast_block** — transfer of the signed block (signed_block) to other network nodes;
+ - **broadcast_transaction** — transfer of a signed transaction (signed_transaction) to other network nodes;
+ - **broadcast_transaction_synchronous** — transfer of the signed transaction (signed_transaction) to other network nodes (waits for the block to enter and returns the hash of the transaction, the block number and the transaction number in the block, or returns false if the transaction expires);
+ - **broadcast_transaction_with_callback** — the same as broadcast_transaction_synchronous, except for checking the validity of the transaction before transferring it to the transaction pool and registering the callback method.
 
 
 ## custom_protocol_api
 
- - **get_account** — возвращает аккаунт по логину с опциональной возможностью запросить custom_protocol_id (опционально, перезаписывает custom_sequence и custom_sequence_block_num если запрошенный custom protocol id найден в истории ноды);
+ - **get_account** — returns an account by login with the optional ability to request custom_protocol_id (optionally, overwrites custom_sequence and custom_sequence_block_num if the requested custom protocol id is found in the node history);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["custom_protocol_api","get_account",[["readdle","V"]]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "id": 116,
@@ -160,15 +161,15 @@ rpc-endpoint = 0.0.0.0:8081
 
 ## database_api
 
- - **get_account_count** — возвращает количество аккаунтов в сети;
- - **get_accounts** — возвращает массив аккаунтов по запрошенным логинам (отличается от **lookup_account_names** дополнительной информацией);
+ - **get_account_count** — returns the number of accounts in the network;
+ - **get_accounts** — returns an array of accounts by the requested logins (differs from **lookup_account_names** with additional information);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_accounts",[["wildviz","zozo"]]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   {
@@ -261,28 +262,28 @@ rpc-endpoint = 0.0.0.0:8081
   }
 ]
 ```
- - **get_accounts_on_sale** — возвращает список аккаунтов выставленных на продажу, имеет два параметра: from (смещение в результирующем списке) и limit (количество записей, не может быть больше 1000);
+ - **get_accounts_on_sale** — returns a list of accounts for sale, has two parameters: from (offset in the resulting list) and limit (the number of records, can not be more than 1000);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_accounts_on_sale",[0,1000]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   {"account":"btc","account_seller":"ae","account_offer_price":"5000.000 VIZ"},
   {"account":"press","account_seller":"on1x","account_offer_price":"10000.000 VIZ"}
 ]
 ```
- - **get_subaccounts_on_sale** — возвращает список сабаккаунтов выставленных на продажу, имеет два параметра: from (смещение в результирующем списке) и limit (количество записей, не может быть больше 1000);
+ - **get_subaccounts_on_sale** — returns a list of subaccounts for sale, has two parameters: from (the offset in the resulting list) and limit (the number of records, can not be more than 1000);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_subaccounts_on_sale",[0,1000]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   {"account":"com","subaccount_seller":"ae","subaccount_offer_price":"10.000 VIZ"},
@@ -293,14 +294,14 @@ rpc-endpoint = 0.0.0.0:8081
   {"account":"viz","subaccount_seller":"committee","subaccount_offer_price":"10000.000 VIZ"}
 ]
 ```
- - **get_block** — возвращает информацию о блоке по его номеру;
+ - **get_block** — returns information about a block by its number;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_block",["1"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "previous": "0000000000000000000000000000000000000000",
@@ -317,14 +318,14 @@ rpc-endpoint = 0.0.0.0:8081
   "transactions": []
 }
 ```
- - **get_block_header** — возвращает заголовок блока по его номеру;
+ - **get_block_header** — returns the block header by its number;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_block_header",["2"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "previous": "000000010496d4414ddcee5b76f9a6b950da6fe9",
@@ -334,14 +335,14 @@ rpc-endpoint = 0.0.0.0:8081
   "extensions": []
 }
 ```
- - **get_chain_properties** — возвращает медианные значения голосуемых параметров сети;
+ - **get_chain_properties** — returns the median values of the voted network parameters;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_chain_properties",[]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "account_creation_fee": "1.000 VIZ",
@@ -364,14 +365,14 @@ rpc-endpoint = 0.0.0.0:8081
   "witness_miss_penalty_duration": 86400
 }
 ```
- - **get_config** — возвращает предустановки в конфигурационном файле протокола VIZ;
+ - **get_config** — returns the presets in the VIZ protocol configuration file;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_config",[]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "CHAIN_100_PERCENT": 10000,
@@ -432,14 +433,14 @@ rpc-endpoint = 0.0.0.0:8081
   "CHAIN_PENDING_TRANSACTION_EXECUTION_LIMIT": 200000
 }
 ```
- - **get_database_info** — возвращает информацию по использованию базы данных (по типу объектов);
+ - **get_database_info** — returns information on the use of the database (by object type);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_database_info",[]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "total_size": "6442450944",
@@ -582,14 +583,14 @@ rpc-endpoint = 0.0.0.0:8081
   ]
 }
 ```
- - **get_dynamic_global_properties** — возвращает данные о динамических глобальных свойствах сети;
+ - **get_dynamic_global_properties** — returns data about dynamic global network properties;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_dynamic_global_properties",[]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "id": 0,
@@ -620,74 +621,74 @@ rpc-endpoint = 0.0.0.0:8081
   "inflation_ratio": 5000
 }
 ```
- - **get_escrow** — возвращает информацию о трехсторонней сделке по логину аккаунта и идентификатору сделки (id);
- - **get_expiring_vesting_delegations** — возвращает список возвращаемой делегированной доли (по времени истечения возврата);
- - **get_hardfork_version** — возвращает версию текущего хардфорка;
- - **get_master_history** — возвращает список истории изменений master привилегий для указанного аккаунта (в виде [объекта master_authority_history_api_object](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/plugins/database_api/include/graphene/plugins/database_api/api_objects/master_authority_history_api_object.hpp));
- - **get_next_scheduled_hardfork** — возвращает следующий запланированный хардфорк;
+ - **get_escrow** — returns information about a three-way transaction by account login and transaction id (id);
+ - **get_expiring_vesting_delegations** — returns a list of the delegated share to be returned (by the expiration time of the return);
+ - **get_hardfork_version** — returns the version of the current hardfork;
+ - **get_master_history** — returns a list of the history of changes of the master privileges for the specified account (in the form of [master_authority_history_api_object](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/plugins/database_api/include/graphene/plugins/database_api/api_objects/master_authority_history_api_object.hpp));
+ - **get_next_scheduled_hardfork** — returns the next scheduled hardfork;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_next_scheduled_hardfork",[]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "hf_version": "2.4.0",
   "live_time": "2019-04-30T05:00:00"
 }
 ```
- - **get_potential_signatures** — возвращает потенциальные публичные ключи для подписи транзакции;
+ - **get_potential_signatures** — returns potential public keys for signing a transaction;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_potential_signatures",[{"ref_block_num":41097,"ref_block_prefix":1234018187,"expiration":"2019-10-14T12:21:46","operations":[["award",{"initiator":"social","receiver":"social","energy":15,"custom_sequence":0,"memo":"ubi","beneficiaries":[]}]],"extensions":[]}]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   "VIZ5iCdUDKypJU3iCp1vbkTk5P7hEW1GgK6E75V1yZZznGU7NuV32"
 ]
 ```
- - **get_proposed_transactions** — возвращает все предложенные транзакции к аккаунту (атрибуты account, from — начальный номер транзакции, limit — пороговое значение);
- - **get_recovery_request** — возвращает данные по запросу на восстановление доступа к аккаунту;
- - **get_required_signatures** — возвращает публичные ключи из предложенных, которые необходимы для подписи транзакции (нужно направить транзакцию без подписи и предоставить открытые ключи);
+ - **get_proposed_transactions** — returns all proposed transactions to the account (attributes: account, from — the initial transaction number, limit — the threshold value); возвращает все предложенные транзакции к аккаунту (атрибуты account, from — начальный номер транзакции, limit — пороговое значение);
+ - **get_recovery_request** — returns data on the request to restore access to the account;
+ - **get_required_signatures** —returns the public keys from the suggested ones that are necessary for signing the transaction (you need to send the transaction without a signature and provide the public keys);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_required_signatures",[{"ref_block_num":41097,"ref_block_prefix":1234018187,"expiration":"2019-10-14T12:21:46","operations":[["award",{"initiator":"social","receiver":"social","energy":15,"custom_sequence":0,"memo":"ubi","beneficiaries":[]}]],"extensions":[]},["VIZ7TAJxC1ibwYEgWon3YWXJdjKaTPS3eVy9zSKq2cRFECMuJvHcq","VIZ5iCdUDKypJU3iCp1vbkTk5P7hEW1GgK6E75V1yZZznGU7NuV32"]]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   "VIZ5iCdUDKypJU3iCp1vbkTk5P7hEW1GgK6E75V1yZZznGU7NuV32"
 ]
 ```
 
- - **get_transaction_hex** — возвращает hex значение сырой транзакции;
+ - **get_transaction_hex** —returns the hex value of the raw transaction;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","get_transaction_hex",[{"ref_block_num":41097,"ref_block_prefix":1234018187,"expiration":"2019-10-14T12:21:46","operations":[["award",{"initiator":"social","receiver":"social","energy":15,"custom_sequence":0,"memo":"ubi","beneficiaries":[]}]],"extensions":[],"signatures":["1f64cb23ba686126f9a00d904840e472de44e0e2291eca5c6b380083ee7a0b9f9934bbe9f03404a33a6df0630a020ff4750b886b65f4af8cd9877df8128d45da05"]}]]}
 ```
 
-Ответ:
+Answer:
 ```json
 89a08b9f8d495a68a45d012f06736f6369616c06736f6369616c0f000000000000000000037562690000011f64cb23ba686126f9a00d904840e472de44e0e2291eca5c6b380083ee7a0b9f9934bbe9f03404a33a6df0630a020ff4750b886b65f4af8cd9877df8128d45da05
 ```
- - **get_vesting_delegations** — возвращает список делегированной доли аккаунта;
- - **get_withdraw_routes** — возвращает массив путей понижения доли для аккаунта;
- - **lookup_account_names** — возвращает массив аккаунтов по запрошенным логинам;
+ - **get_vesting_delegations** — returns a list of the delegated account share;
+ - **get_withdraw_routes** — returns an array of ways to reduce the share for the account;
+ - **lookup_account_names** — returns an array of accounts by the requested logins;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","lookup_account_names",[["wildviz","zozo"]]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   {
@@ -779,14 +780,14 @@ rpc-endpoint = 0.0.0.0:8081
   null
 ]
 ```
- - **lookup_accounts** — возвращает массив логинов аккаунтов по нижней границе с указанием количества возвращаемых элементов (не более 1000);
+ - **lookup_accounts** — returns an array of account logins along the lower border with an indication of the number of returned elements (no more than 1000);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["database_api","lookup_accounts",["ae","10"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   "ae",
