@@ -652,7 +652,7 @@ Answer:
   "VIZ5iCdUDKypJU3iCp1vbkTk5P7hEW1GgK6E75V1yZZznGU7NuV32"
 ]
 ```
- - **get_proposed_transactions** — returns all proposed transactions to the account (attributes: account, from — the initial transaction number, limit — the threshold value); возвращает все предложенные транзакции к аккаунту (атрибуты account, from — начальный номер транзакции, limit — пороговое значение);
+ - **get_proposed_transactions** — returns all proposed transactions to the account (attributes: account, from — the initial transaction number, limit — the threshold value); returns all proposed transactions to the account (attributes: account, from - the initial transaction number, limit - the threshold value)
  - **get_recovery_request** — returns data on the request to restore access to the account;
  - **get_required_signatures** —returns the public keys from the suggested ones that are necessary for signing the transaction (you need to send the transaction without a signature and provide the public keys);
 
@@ -802,18 +802,18 @@ Answer:
   "ae103"
 ]
 ```
- - **verify_account_authority** — проверяет подпись транзакции отдельным аккаунтом с указанием публичного ключа;
- - **verify_authority** — принимает подписанную транзакцию и возвращает TRUE, если транзакция подписана всеми необходимыми ключами;
+ - **verify_account_authority** — verifies the signature of the transaction by a separate account with the indication of the public key;
+ - **verify_authority** — accepts a signed transaction and returns TRUE if the transaction is signed with all the necessary keys;
 
 ## account_by_key
 
- - **get_key_references** — возвращает массив логинов аккаунтов, которые содержат указанный публичный ключ.
+ - **get_key_references** — returns an array of account logins that contain the specified public key.
 
-Пример запроса:
+Request example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["account_by_key","get_key_references",[["VIZ5Z2po7K5CoCXw2xLPPt8JJvJLJ3xVNANLgTy9KDfLeZH2urSSd","VIZ1111111111111111111111111111111114T1Anm"]]]}
 ```
-Ответ:
+Answer:
 ```
 [
   [
@@ -827,13 +827,13 @@ Answer:
 
 ## account_history
 
- - **get_account_history** — возвращает историю операций (в том числе и виртуальных), связанных с определенным аккаунтом. В конфигурационном файле может быть многократно указан `track-account-range` в виде json строки: `["from","to"]`.
+ - **get_account_history** — returns the history of operations (including virtual ones) associated with a specific account. The `track-account-range` can be repeatedly specified in the configuration file as a json string: `["from","to"]`.
 
-Пример запроса:
+Request example:
 ```
 {"id":1,"method":"call","jsonrpc":"2.0","params":["account_history","get_account_history",["on1x","-1","5"]]}
 ```
-Ответ:
+Answer:
 ```json
 [
   [
@@ -881,14 +881,14 @@ Answer:
 ```
 
 ## committee_api
- - **get_committee_request** — возвращает информацию о заявке (можно указать возвращаемое количество голосов за заявку);
+ - **get_committee_request** — returns information about the application (you can specify the number of votes returned for the application);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["committee_api","get_committee_request",["39","1"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "id": 38,
@@ -918,14 +918,14 @@ Answer:
   ]
 }
 ```
- - **get_committee_request_votes** — возвращает массив всех голосов по заявке;
+ - **get_committee_request_votes** — returns an array of all votes on the application;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["committee_api","get_committee_request_votes",["39"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   {
@@ -946,14 +946,14 @@ Answer:
   ...
 ]
 ```
- - **get_committee_requests_list** — возвращает массив идентификаторов заявок в комитет по статусу (0 — ожидает рассмотрения, 1 — отменена создателем, 2 — недостаточно голосов, 3 — недостаточная выплата для заявки, 4 — заявка одобрена и ожидает выплат, 5 — выплаты завершены);
+ - **get_committee_requests_list** — returns an array of application IDs to the committee, depending on the status (0 - pending review, 1 - canceled by the creator, 2 - insufficient votes, 3 - insufficient payment for the application, 4 — the application is approved and waiting for payments, 5 - payments are completed);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["committee_api","get_committee_requests_list",["2"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   2,
@@ -966,14 +966,14 @@ Answer:
 
 
 ## invite_api
- - **get_invite_by_id** — возвращает инвайт по идентификатору;
+ - **get_invite_by_id** — returns an invite by ID;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["invite_api","get_invite_by_id",["0"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "id": 0,
@@ -988,15 +988,15 @@ Answer:
   "status": 2
 }
 ```
- - **get_invite_by_key** — возвращает инвайт по публичному ключу;
- - **get_invites_list** — возвращает массив идентификаторов инвайтов по статусу (0 — не активированные, 1 — погашенные на аккаунт, 2 — использованы для регистрации аккаунта);
+ - **get_invite_by_key** — returns an invite using a public key;
+ - **get_invites_list** — returns an array of invite IDs by status (0 - not activated, 1 - redeemed to the account, 2 - used for account registration);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["invite_api","get_invites_list",["0"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   6,
@@ -1009,14 +1009,14 @@ Answer:
 ```
 
 ## operation_history
- - **get_ops_in_block** — возвращает массив операций по номеру блока (можно указать необходимость показывать только виртуальные операции);
+ - **get_ops_in_block** — returns an array of operations by block number (you can specify whether to show only virtual operations);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["operation_history","get_ops_in_block",["10913871","false"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   {
@@ -1087,14 +1087,14 @@ Answer:
   }
 ]
 ```
- - **get_transaction** — возвращает данные транзакции по её хэшу (id);
+ - **get_transaction** — returns transaction data by its hash (id);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["operation_history","get_transaction",["d5f53163bc237b17c8fd6f3278d3ca1b4ae21691"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "ref_block_num": 34889,
@@ -1122,13 +1122,18 @@ Answer:
 ```
 
 ## paid_subscription_api
- - **get_paid_subscriptions** — возвращает список платных подписок отсортированных по аккаунту инициатору (принимает 2 параметра: from — количество записей для отступа от начала, limit — ограничение на количество результатов, не может превышать 1000);
-Пример:
+ - **get_paid_subscriptions** — returns a list of paid subscriptions sorted by the initiator account (accepts 2 parameters: from — the number of records to indent from the beginning, limit — the limit of the number of results, can not exceed 1000);
+
+  
+
+Example:
+
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["paid_subscription_api","get_paid_subscriptions",[0,1]]}
 ```
 
-Ответ:
+Answer:
+
 ```json
 [
   {
@@ -1142,28 +1147,28 @@ Answer:
   }
 ]
 ```
- - **get_active_paid_subscriptions** — возвращает массив активных соглашений по платной подписке для аккаунта;
+ - **get_active_paid_subscriptions** — returns an array of active paid subscription agreements for the account;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["paid_subscription_api","get_active_paid_subscriptions",["on1x"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   "viz.world"
 ]
 ```
- - **get_inactive_paid_subscriptions** — возвращает массив отмененных соглашений по платной подписке для аккаунта;
- - **get_paid_subscription_options** — возвращает данные о соглашении по платной подписке на аккаунт;
+ - **get_inactive_paid_subscriptions** — returns an array of canceled paid subscription agreements for the account;
+ - **get_paid_subscription_options** — returns data about the agreement for a paid subscription to the account;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["paid_subscription_api","get_paid_subscription_options",["viz.world"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "creator": "viz.world",
@@ -1195,14 +1200,14 @@ Answer:
   "active_subscribers_with_auto_renewal_summary_amount": 35000
 }
 ```
- - **get_paid_subscription_status** — возвращает данные о соглашении подписчика по платной подписке на определенный аккаунт;
+ - **get_paid_subscription_status** — returns data about the subscriber's agreement for a paid subscription to a specific account;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["paid_subscription_api","get_paid_subscription_status",["on1x","viz.world"]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "subscriber": "on1x",
@@ -1220,14 +1225,14 @@ Answer:
 
 ## witness_api
 
- - **get_active_witnesses** — возвращает массив делегатов в текущем раунде (из 21 слота, при наличии такого количества делегатов);
+ - **get_active_witnesses** — returns an array of delegates in the current round (out of 21 slots, if there is this number of delegates);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["witness_api","get_active_witnesses",[]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   "solox",
@@ -1253,26 +1258,26 @@ Answer:
   "charity"
 ]
 ```
- - **get_witness_by_account** — возвращает делегата в соответствием с его логином;
- - **get_witness_count** — возвращает количество аккаунтов, заявивших о желании быть делегатом;
+ - **get_witness_by_account** — returns the delegate in accordance with its username;
+ - **get_witness_count** — returns the number of accounts that have declared their desire to be a delegate;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["witness_api","get_witness_count",[]]}
 ```
 
-Ответ:
+Answer:
 ```json
 59
 ```
- - **get_witness_schedule** — возвращает очередь делегатов дополненную расчитанными медианными значениями параметров сети и мажориторной версией хардфорка;
+ - **get_witness_schedule** — returns the delegate queue supplemented with the calculated median values of the network parameters and the majority version of the hard fork;
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["witness_api","get_witness_schedule",[]]}
 ```
 
-Ответ:
+Answer:
 ```json
 {
   "id": 0,
@@ -1303,14 +1308,14 @@ Answer:
   "majority_version": "2.4.0"
 }
 ```
- - **get_witnesses** — возвращает массив делегатов в соответствием с их id (можно запросить нескольких в массиве);
+ - **get_witnesses** — returns an array of delegates according to their id (you can request several in the array);
 
-Пример:
+Example:
 ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["witness_api","get_witnesses",[["0"]]]}
 ```
 
-Ответ:
+Answer:
 ```json
 [
   {
@@ -1355,14 +1360,14 @@ Answer:
   }
 ]
 ```
- - **get_witnesses_by_vote** — возвращает массив делегатов, отсортированных по потенциалу полученных голосов (указывается левая граница списка и количество возвращаемых значений в массиве, но не более 100);
+ - **get_witnesses_by_vote** — returns an array of delegates sorted by the potential of the received votes (the left border of the list and the number of returned values in the array are specified, but not more than 100);
 
-Пример:
+Example:
  ```json
 {"id":1,"method":"call","jsonrpc":"2.0","params":["witness_api","get_witnesses_by_vote",["","10000"]]}
  ```
 
-Ответ:
+Answer:
 ```json
 [
  {
@@ -1407,15 +1412,15 @@ Answer:
  }
 ]
 ```
- - **get_witnesses_by_counted_vote** — возвращает массив делегатов, отсортированных по потенциалу полученных голосов с учетом наложенного штрафа за пропуск блоков (указывается левая граница списка и количество возвращаемых значений в массиве, но не более 100);
- - **lookup_witness_accounts** — возвращает массив логинов аккаунтов, которые заявляли себя как делегаты (указывается левая граница списка и количество возвращаемых значений в массиве, но не более 1000).
+ - **get_witnesses_by_counted_vote** — returns an array of delegates sorted by the potential of the received votes received, taking into account the penalty imposed for skipping blocks (the left border of the list and the number of returned values in the array are specified, but not more than 100); 
+ - **lookup_witness_accounts** — returns an array of logins of accounts that declared themselves as delegates (the left border of the list and the number of returned values in the array are specified, but not more than 1000).
 
- Пример:
+ Example:
  ```json
  {"id":1,"method":"call","jsonrpc":"2.0","params":["witness_api","lookup_witness_accounts",["","4"]]}
  ```
 
- Ответ:
+ Answer:
  ```json
  [
   "t3",
