@@ -1,40 +1,40 @@
-# Экономика
+# Economy
 
-В блокчейне VIZ были созданы условия для так называемой *прогнозируемой* экономики. Если в других системах заложены принципы с затухающей инфляцией, что ставит в неравные условия участников, подключившихся к системе в разное время, то в VIZ запрограммирована фиксированная инфляция с раундами в 1 год ([10512000 блоков](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/protocol/include/graphene/protocol/config.hpp#L28)).
+The conditions for the so-called *predictable* economy were created in the VIZ blockchain. If other systems have principles with decaying inflation, which puts participants who joined the system at different times in unequal conditions, then VIZ has a fixed inflation with rounds of 1 year ([10512000 blocks](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/protocol/include/graphene/protocol/config.hpp#L28)).
 
 
 ***
 
-## Инфляционная модель
+## Inflation model
 
-При запуске цепи были распределены 50 млн viz. Каждый раунд закладывается фиксированная инфляция в 10%. Через год после старта в сети было 55 млн viz, а значит, инфляция в следующий раунд считалась уже от 55 миллионов viz, что привело к эмитированию 5,5 млн viz за второй год.
+At the start of the chain, 50 million viz were distributed. Each round is based on a fixed inflation rate of 10%. A year after the start, there were 55 million viz in the network, which means that the inflation for the next round was already considered from 55 million viz, which led to the issuance of 5.5 million viz for the second year.
 
-За счет фиксированной инфляции появляется возможность прогнозировать эмиссию viz каждый блок. Во второй год, например, каждый блок эмитируется `5500000 / 10512000 = 0.523 viz`. И это число не меняется, пока не начнется следующий раунд.
+Due to fixed inflation, it becomes possible to predict the issue of viz for each block. In the second year, for example, each block is issued `5500000 / 10512000 = 0.523 viz`. And this number does not change until the next round begins.
 
-## Распределение эмиссии токенов
+## Token issue distribution
 
-Существующая модель VIZ предусматривает управление экономикой делегатами сети. Избранные участниками сети делегаты голосуют за параметры сети, среди которых есть параметры по распределению эмиссии токенов:
+The existing VIZ model provides for the management of the economy by network delegates. The delegates elected by the network participants vote for the network parameters, among which there are parameters for the distribution of the token issue:
 
- - **inflation_witness_percent** — экономический параметр, задающий процент эмиссии, направляемый на вознаграждение делегатов за поддержание инфраструктуры блокчейн-системы;
- - **inflation_ratio_committee_vs_reward_fund** — экономический параметр, определяющий соотношение эмиссии, направленной в Фонд ДАО и Фонд наград.
+ - **inflation_witness_percent** — - an economic parameter that sets the percentage of the issue directed to the remuneration of delegates for maintaining the infrastructure of the blockchain system;
+ - **inflation_ratio_committee_vs_reward_fund** — an economic parameter that determines the ratio of the issue sent to the DAO Fund and the Awards Fund.
 
-> Актуальные значения параметров можно узнать [выполнив API запрос `get_chain_properties` к плагину `database_api`](plugins-api.md#database_api) или [через обозреватель сети на сайте control.viz.world](https://control.viz.world/tools/blocks/)
+> You can find out the current values of the parameters by executing an [API request `get_chain_properties`to the plugin `database_api`](plugins-api.md#database_api) or [via the network browser on the control.viz.world website](https://control.viz.world/tools/blocks/)
 
-## Фонд ДАО
+## DAO Fund
 
-Фонд ДАО копит токены viz для финансирования инициатив по развитию экосистемы. Если участник сети решил провести конкурс, разработать приложение, принести пользу всей сети — он может подать заявку на финансирование из Фонда. Любой участник сети может проголосовать как против, так и за полное или частичное исполнение заявки. Когда подойдет время рассмотрения заявки, будут подсчитаны доли всех участников сети, принявших участие в голосовании, и вынесено решение.
+The DAO Foundation collects viz tokens to finance initiatives for the development of the ecosystem. If a network participant has decided to hold a competition, develop an application, benefit the entire network — he can apply for funding from the Fund. Any member of the network can vote both against and for the full or partial execution of the application. When the time comes for considering the application, the shares of all network participants who took part in the voting will be calculated and a decision will be made.
 
-## Фонд наград
+## Awards Fund
 
-У каждого участника сети есть возобновляемый со временем ресурс — энергия. Израсходованная энергия восполняется со скоростью 100 процентных пунктов за 5 суток (20 п.п. в сутки, 0,83 п.п. в час и т.д.). Энергия аккаунта не может превышать 100%.
+Each participant of the network has a resource that is renewable over time — energy. The spent energy is replenished at a rate of 100 percentage points in 5 days (20 p. p. per day, 0.83 p. p.per hour, etc.). The energy of the account cannot exceed 100%.
 
-Когда участник Виза решает наградить кого-то, он указывает процент энергии аккаунта, который желает потратить на награду. Блокчейн учитывает размер социального капитала участника и затраченную на награду энергию и соотносит их с суммой наград всех участников за последние 5 суток. В результате, целевой аккаунт получает награду в социальный капитал из эмиссии пропорционально социальному капиталу и потраченной энергии награждающего. Таким образом обеспечивается равноправный конкурентный доступ к Фонду наград. Участник сети сам решает, кого наградить и за что, открывая возможность свободного выбора и стимулирования любых действий и инициатив.
+When a VIZ participant decides to award someone, he indicates the percentage of the account's energy that he wants to spend on the award. The blockchain considers the size of the participant's social capital and the energy spent on the award and correlates them with the sum of the awards of all participants for the last 5 days. As a result, the target account receives a reward in social capital from the issue in proportion to the social capital and the energy spent by the recipient.This ensures equal competitive access to the Awards Fund. The network participant decides for himself who to reward and for what, opening up the possibility of free choice and stimulating any actions and initiatives.
 
-Например:
- - Автор рассказа и его читатели могут наградить иллюстратора, который опубликовал рисунки персонажей;
- - На сайте вопросов и ответов участники могут наградить того, кто помог решить и разобраться в вопросе;
- - Зрители могут наградить видео-блогера за интересную тему или обучающий урок.
+For example:
+ - The author of the story and his readers can reward the illustrator who published the drawings of the characters;
+ - On the website of questions and answers, participants can reward the one who helped solve and understand the question;
+ - Viewers can reward a video blogger for an interesting topic or a training lesson.
 
-## Самоуправление
+## Selfgovernment
 
-Вся экономика VIZ находится под управлением владельцев социального капитала. Именно они голосуют за делегатов, если согласны с их виденьем и моделью управления системой (если не за кого голосовать, каждый может сам стать делегатом и получить голоса других участников). Фонд наград и Фонд ДАО работают по справедливой равноправно долевой модели управления.
+The entire economy of the VIZ is managed by the owners of social capital. They are the ones who vote for the delegates if they agree with their vision and model of managing the system (if there is no one to vote for, everyone can become a delegate himself and get the votes of other participants). The Awards Fund and the DAO Fund work according to a fair, equally shared management model.
