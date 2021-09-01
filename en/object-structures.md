@@ -1,21 +1,21 @@
-# Объекты и структуры в VIZ
+# Objects and structures in VIZ
 
-Рассматривая VIZ необходимо разделять объекты и структуры протокола (операция, транзакция, блок, ассет, версия, полномочия) от объектов и структур которые существуют непосредственно в блокчейне (на которые влияют те или иные операции).
+Considering VIZ, it is necessary to separate the objects and structures of the protocol (operation, transaction, block, cassette, version, authority) from the objects and structures that exist directly in the blockchain (which are affected by certain operations).
 
 ***
 
-## Список объектов и структур протокола
+## List of protocol objects and structures
 
-Все, что касается протокола находится [в каталоге /libraries/protocol](https://github.com/VIZ-Blockchain/viz-cpp-node/tree/master/libraries/protocol) исходного кода C++ ноды блокчейна VIZ.
+Everything related to the protocol is located in the [/libraries/protocol directory](https://github.com/VIZ-Blockchain/viz-cpp-node/tree/master/libraries/protocol) of the source code of the C++ node of the VIZ blockchain.
 
- - **types / типы данных** в протоколе
- - **operations / proposal_operations / chain_operations / chain_virtual_operations / операция** — все что связано с операциями и их обработкой;
- - **transaction / транзакция** — все что связано с транзакцией (id, список операций, к какому блоку она ссылается);
- - **block_header / block / блок** — содержит транзакции, ссылается на предыдущий блок, содержит extensions который может использовать делегат для инициации голосования за переход на новую версию хардфорка;
- - **asset / ассет** — структура токенов в VIZ (VIZ и SHARES, отношение ассетов разного разряда друг к другу);
- - **base / version / версия** — структура описывающая версию протокола сети, голос и время за переход на новую версию;
- - **authority / полномочия** — структура описывающая связку ключей для определенного типа доступа аккаунта;
- - **sign_state / состояние подписи** — помощник по проверке подписей (или наличия ключа, который может ее сгенерировать).
+ - **types** — data types in the protocol
+ - **operations / proposal_operations / chain_operations / chain_virtual_operations** — everything related to operations and their processing;
+ - **transaction** — everything related to the transaction (id, list of operations, which block it refers to);
+ - **block_header / block** — contains transactions, refers to the previous block, contains *extensions* that a delegate can use to initiate a vote for switching to a new version of the hardfork;
+ - **asset** — структура токенов в VIZ (VIZ и SHARES, отношение ассетов разного разряда друг к другу);
+ - **base / version** — структура описывающая версию протокола сети, голос и время за переход на новую версию;
+ - **authority** — структура описывающая связку ключей для определенного типа доступа аккаунта;
+ - **sign_state** — помощник по проверке подписей (или наличия ключа, который может ее сгенерировать).
 
 ## Объекты и структуры в блокчейне
 
