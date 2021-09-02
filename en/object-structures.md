@@ -12,7 +12,7 @@ Everything related to the protocol is located in the [/libraries/protocol direct
  - **operations / proposal_operations / chain_operations / chain_virtual_operations** — everything related to operations and their processing;
  - **transaction** — everything related to the transaction (id, list of operations, which block it refers to);
  - **block_header / block** — contains transactions, refers to the previous block, contains *extensions* that a delegate can use to initiate a vote for switching to a new version of the hardfork;
- - **asset** — структура токенов в VIZ (VIZ и SHARES, отношение ассетов разного разряда друг к другу);
+ - **asset** — the structure of tokens in VIZ (VIZ and SHARES, the ratio of assets of different categories to each other);
  - **base / version** — структура описывающая версию протокола сети, голос и время за переход на новую версию;
  - **authority** — структура описывающая связку ключей для определенного типа доступа аккаунта;
  - **sign_state** — помощник по проверке подписей (или наличия ключа, который может ее сгенерировать).
