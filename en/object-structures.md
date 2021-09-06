@@ -12,83 +12,83 @@ Everything related to the protocol is located in the [/libraries/protocol direct
  - **operations / proposal_operations / chain_operations / chain_virtual_operations** — everything related to operations and their processing;
  - **transaction** — everything related to the transaction (id, list of operations, which block it refers to);
  - **block_header / block** — contains transactions, refers to the previous block, contains *extensions* that a delegate can use to initiate a vote for switching to a new version of the hardfork;
- - **asset** — the structure of tokens in VIZ (VIZ and SHARES, the ratio of assets of different categories to each other);
- - **base / version** — структура описывающая версию протокола сети, голос и время за переход на новую версию;
- - **authority** — структура описывающая связку ключей для определенного типа доступа аккаунта;
- - **sign_state** — помощник по проверке подписей (или наличия ключа, который может ее сгенерировать).
+ - **asset** — a structure of tokens in VIZ (VIZ and SHARES, the ratio of assets of different categories to each other);
+ - **base / version** — the structure describing the version of the network protocol, the voting and the time for switching to the new version;
+ - **authority** — a structure describing the keyset for a certain type of account access;
+ - **sign_state** — an assistant for verifying signatures (or the presence of a key that can generate it).
 
-## Объекты и структуры в блокчейне
+## Objects and structures in the blockchain
 
-Именно из объектов и структур самого блокчейна состоит состояния системы (стэйт). Каждый блок содержащий операции обрабатывается основным модулем database, который просчитывает все изменения и принимает решения по отложенным действиям. В каталоге [/libraries/chain/include/graphene/chain](https://github.com/VIZ-Blockchain/viz-cpp-node/tree/master/libraries/chain/include/graphene/chain) содержатся как объекты и структуры данных, так и внутреннее устройство блокчейна (evaluator, block_log, dynamic_global_property_object, [типы объектов](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/chain/include/graphene/chain/chain_object_types.hpp)).
+It is from the objects and structures of the blockchain itself that the state of the system consists. Each block containing operations is processed by the main database module, which calculates all changes and makes decisions on deferred actions. In the [/libraries/chain/include/graphene/chain](https://github.com/VIZ-Blockchain/viz-cpp-node/tree/master/libraries/chain/include/graphene/chain) catalog contains both objects and data structures, as well as the internal structure of the blockchain (evaluator, block_log, dynamic_global_property_object, [object types](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/chain/include/graphene/chain/chain_object_types.hpp)).
 
-Состояние системы состоит из объектов:
+The state of the system consists of objects:
 
- - **dynamic_global_property_object** — основной объект содержащий данные о текущем состоянии экономики и состоянии ноды (например, номер необратимого блока);
- - **account_object** — записи аккаунтов;
- - **account_authority_object** — записи полномочий для аккаунтов;
- - **witness_object** — записи делегатов;
- - **transaction_object** — используется для транзакций в очереди (это позволяет проверять отсутствии дублей у новых транзакций и удалять транзакции из очереди, если она не выполнилась до срока истечения expire);
- - **block_summary_object** — используется для индексации блоков и их hash, [для проверки TaPoS](state.md#Уникальность-транзакций-и-tapos-transactions-as-proof-of-stake) (транзакция должна ссылаться на прошлый блок, проверка происходит как раз по индексу, построенному из объектов `block_summary_object`);
- - **witness_schedule_object** — состояние очереди делегатов;
- - **witness_vote_object** — записи голосов за делегатов;
- - **hardfork_property_object** — записи о текущем хардфорке сети;
- - **withdraw_vesting_route_object** — записи о маршруте распределения токенов при конвертации доли;
- - **master_authority_history_object** — записи изменений мастер полномочий;
- - **account_recovery_request_object** — запросы на восстановление аккаунта;
- - **change_recovery_account_request_object** — запросы на смену доверенного аккаунта для восстановления доступа;
- - **escrow_object** — записьи о трехсторонних сделках;
- - **vesting_delegation_object** — записи о делегированной доли;
- - **vesting_delegation_expiration_object** — записи о возвращаемой делегированной доли после отмены делегирования;
- - **account_metadata_object** — отдельные записи с мета-данными аккаунта;
- - **proposal_object** — записи proposal операций;
- - **required_approval_object** — записи требуемых подтверждений для proposal операций;
- - **committee_request_object** — записи заявок в комитет;
- - **committee_vote_object** — записи голосов по заявкам в комитете;
- - **invite_object** — записи всех инвайтов;
- - **award_shares_expire_object** — записи наград, которые должны понизить конкуренцию по истечению срока;
- - **paid_subscription_object** — информация о платных подписках;
- - **paid_subscribe_object** — записи оформленных платных подписок;
- - **witness_penalty_expire_object** — записи штрафов делегатам, пропустившим блок.
+ - **dynamic_global_property_object** — the main object containing data about the current state of the economy and the state of the node (for example, the number of an irreversible block);
+ - **account_object** — account entries;
+ - **account_authority_object** — entries of permissions for accounts;
+ - **witness_object** — entries of delegates;
+ - **transaction_object** — used for transactions in the queue (this allows you to check if there are no duplicates for new transactions and delete transactions from the queue if it was not executed before the expiration date *expire*); 
+ - **block_summary_object** — it is used for indexing blocks and their hash, [for checking TaPoS](state.md#Uniqueness-of-transactions-and-tapos-transactions-as-proof-of-stake) (the transaction must refer to the previous block, the check takes place just by the index constructed from `block_summary_object` objects);
+ - **witness_schedule_object** — status of the delegate queue;
+ - **witness_vote_object** — records of voting for delegates
+ - **hardfork_property_object** — records about the current network hard fork;
+ - **withdraw_vesting_route_object** — records about the token distribution route when converting a share;
+ - **master_authority_history_object** — records about changes of the master permissions;
+ - **account_recovery_request_object** — account recovery requests;
+ - **change_recovery_account_request_object** — requests to change a trusted account to restore access;
+ - **escrow_object** — records of three-way transactions;
+ - **vesting_delegation_object** — records about the delegated share;
+ - **vesting_delegation_expiration_object** — records about the delegated share to be returned after the delegation is canceled;
+ - **account_metadata_object** — separate records with account metadata;
+ - **proposal_object** — records of *proposal* operations;
+ - **required_approval_object** — records of required confirmations for *proposal* operations;
+ - **committee_request_object** — records of requests to the committee;
+ - **committee_vote_object** — records of votes on applications in the committee;
+ - **invite_object** — records of all invites;
+ - **award_shares_expire_object** — records of awards that should lower the competition at the end of the term;
+ - **paid_subscription_object** — information about paid subscriptions;
+ - **paid_subscribe_object** — records of paid subscriptions issued;
+ - **witness_penalty_expire_object** — records of penalties for delegates who missed the block.
 
-## Объекты и структуры в API плагинах
+## Objects and structures in API plugins
 
-Плагины предоставляющие API могут возвращать объекты как из блокчейна, так и собственные. Простые запросы с получением объекта по id отдают данные как есть, часто пропуская объект из блокчейна через конструктор аналогичного для API, чтобы скопировать состояние и отдать пользователю его, например: плагин `witness_api` использует отдельный объект `witness_api_object`. А плагин `database_api` использует `account_api_object`, который дополняет стандартный объект блокчейна аккаунт типами доступа копируя туда актуальные полномочия из индекса.
+Plugins that provide the API can return objects both from the blockchain and their own. Simple requests with getting an object by id return the data as is, often passing the object from the blockchain through the constructor of a similar to API to copy the state and give it to the user, for example: the `witness_api` plugin uses a separate `witness_api_object` object. And the `database_api` plugin uses `account_api_object` , which complements the standard blockchain object account with access types by copying the current permissions from the index there.
 
-Если плагин расширяет стандартные таблицы индексов и объекты, то он создает новую структуру, отдельно ведет учет операций и заполняет индекс. Например, так поступает плагин `private_message`, обрабатывая custom операции (создавая объекты `message_object`, наполняющие индекс `message_index`).
+If the plugin extends the standard index tables and objects, it creates a new structure, separately keeps records of operations and fills in the index. For example, the `private_message` plugin does this by processing *custom* operations (creating `message_object` objects, that fill the `message_index` index).
 
-## Голосуемые параметры сети
+## Voting parameters of the network
 
-Делегаты транслируют свою позицию по голосуемым параметрам сети. Блокчейн система каждый цикл очереди делегатов (21 блок) вычисляет медианные значения голосуемых параметров и фиксирует их на этот цикл. Описание параметров (в скобках указаны медианные значения на момент написания данного раздела):
+Delegates broadcast their position on the network's voting parameters. The blockchain system calculates the median values of the voted parameters every cycle of the delegate queue (21 blocks) and fixes them for this cycle. Description of the parameters (the median values are indicated in parentheses at the time of writing this section):
 
- - **account_creation_fee** — передаваемая комиссия при создании аккаунта (1.000 VIZ);
- - **create_account_delegation_ratio** — коэффициент наценки делегирования при создании аккаунта (x10);
- - **create_account_delegation_time** — время делегирования при создании аккаунта (2592000 секунд);
- - **bandwidth_reserve_percent** — доля сети, выделяемая для резервной пропускной способности (0.01%);
- - **bandwidth_reserve_below** — резервная пропускная способность действует для аккаунтов с долей сети до порога (1.000000 SHARES);
- - **committee_request_approve_min_percent** — минимальный процент доли сети голосующих, необходимый для принятия решения по заявке в комитете (10%);
- - **min_delegation** — минимальное количество токенов при делегировании (1.000 VIZ);
- - **vote_accounting_min_rshares** — минимальный вес голоса для учёта при награждении (5000000 rshares);
- - **maximum_block_size** — максимальный размер блока в сети (65536 байт);
- - **inflation_witness_percent** — доля инфляции для награды делегатам (20%);
- - **inflation_ratio_committee_vs_reward_fund** — соотношение разделения остатка инфляции между комитетом и фондом наград (75%);
- - **inflation_recalc_period** — количество блоков между пересчётом инфляционной модели (806400);
- - **data_operations_cost_additional_bandwidth** — дополнительная наценка пропускной способности за каждую data операцию в транзакции (0% от размера транзакции);
- - **witness_miss_penalty_percent** — штраф делегату за пропуск блока в процентах от суммарного веса голосов (1%);
- - **witness_miss_penalty_duration** — длительность штрафа делегату за пропуск блока в секундах (86400 секунд);
- - **create_invite_min_balance** — минимальная сумма чека (10.000 VIZ);
- - **committee_create_request_fee** — плата за создание заявки в Фонд ДАО (100.000 VIZ);
- - **create_paid_subscription_fee** — плата за создание платной подписки (100.000 VIZ);
- - **account_on_sale_fee** — плата за выставление аккаунта на продажу (10.000 VIZ);
- - **subaccount_on_sale_fee** — плата за выставление субаккаунтов на продажу (100.000 VIZ);
- - **witness_declaration_fee** — плата за объявление аккаунта делегатом (10.000 VIZ);
- - **withdraw_intervals** — количество периодов (дней) уменьшения капитала (28).
+ - **account_creation_fee** — transferred commission when creating an account (1.000 VIZ);
+ - **create_account_delegation_ratio** — delegation margin factor when creating an account (x10);
+ - **create_account_delegation_time** — delegation time when creating an account (2592000 seconds);
+ - **bandwidth_reserve_percent** — the share of the network allocated for backup bandwidth (0.01%);
+ - **bandwidth_reserve_below** — backup bandwidth, valid for accounts with a network share up to the threshold (1.000000 SHARES);
+ - **committee_request_approve_min_percent** — the minimum percentage of the voting network required for making a decision on the application to the committee (10%);
+ - **min_delegation** — minimum number of tokens for delegation (1,000 VIZ);
+ - **vote_accounting_min_rshares** — minimum vote weight to be taken into account when awarding (5000000 rushares);
+ - **maximum_block_size** — maximum block size in the network (65536 bytes);
+ - **inflation_witness_percent** — the share of inflation for the award to delegates (20%);
+ - **inflation_ratio_committee_vs_reward_fund** — the ratio of the division of the balance of inflation between the committee and the awards fund (75%);
+ - **inflation_recalc_period** — the number of blocks between the recalculation of the inflation model (806400);
+ - **data_operations_cost_additional_bandwidth** — additional bandwidth markup for each data operation in a transaction (0% of the transaction size);
+ - **witness_miss_penalty_percent** — penalty to a delegate for skipping a block as a percentage of the total weight of votes (1%);
+ - **witness_miss_penalty_duration** — the duration of the penalty to the delegate for skipping a block in seconds (86400 seconds);
+ - **create_invite_min_balance** — minimum check amount (10,000 VIZ);
+ - **committee_create_request_fee** — fee for creating an application to the DAO Fund (100.000 VIZ);
+ - **create_paid_subscription_fee** — fee for creating a paid subscription (100.000 VIZ);
+ - **account_on_sale_fee** — fee for placing an account for sale (10.000 VIZ);
+ - **subaccount_on_sale_fee** — fee for placing subaccounts for sale (100.000 VIZ);
+ - **witness_declaration_fee** — fee for declaring an account as a delegate (10.000 VIZ);
+ - **withdraw_intervals** — the number of periods (days) of capital reduction (28).
 
-## Служебные аккаунты
+## Service accounts
 
-В VIZ существуют служебные аккаунты, которые имеют заложенные в конфигурационном файле ключи доступа к определенным полномочиям:
+In VIZ, there are service accounts that have access keys to certain permissions embedded in the configuration file:
 
- - **null** — специализированный аккаунт который сжигает полученные токены. Имеет пустые полномочия, механизм сжигания токенов заложен в исходный код блокчейна.
- - **committee** — специализированный аккаунт который все полученные токены переводит в фонд комитета, позволяя таким образом жертвовать токены на развитие экосистемы. Имеет пустые полномочия. Также служит инициатором сети, для анонимного генезиса блокчейна (когда ключ подписи блоков от аккаунта committee доступен всем в конфигурационном файле). Ключ подписи сформирован из строки конкатенации строк `committee`, `viz`, `sign`, что соответствует `5Hw9YPABaFxa2LooiANLrhUK5TPryy8f7v9Y1rk923PuYqbYdfC`. После запуска сети и подключения к ней других делегатов аноним может прекратить подпись аккаунтом `committee` и ключ подписи обнуляется до значения `VIZ1111111111111111111111111111111114T1Anm`.
- - **anonymous** — специализированный аккаунт который при получении токенов с указанным ключом (и логином, при желании) создает анонимный аккаунт (анонимность обеспечивается возможным переводом с шлюзов как биржевых так и социальных, custody сервисов). Имеет пустые полномочия. Формат заметки `memo` для регистрации анонимного аккаунта: `login:public_key`, где `login` желаемый логин для нового аккаунта, а `public_key` — единый публичный ключ для всех типов полномочий. Если логин не указан, а в заметке только `public_key`, то создается анонимный сабаккаунт формата `nX.anonymous`, где X — инкрементация номера, указанного в `json_metadata` аккаунта `anonymous`. **Внимание!** Если заметка не указана, средства будут сожжены аналогично переводу на аккаунт `null`.
- - **invite** — специализированный аккаунт для возможности анонимно, не имея аккаунта в блокчейне, активировать инвайт коды. Активный ключ  доступен всем в конфигурационном файле, сформирован из строки конкатенации строк `invite`, `viz`, `active`, что соответствует `5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV6FyFW`. Изначально не имеет какой-либо доли для осуществления транзакций, что может быть исправлено путем делегирования или включения системы резервной пропускной способности делегатами.
- - **viz** — аккаунт инициатор цепочки в генезис блоке, приватный ключ `5JabcrvaLnBTCkCVFX5r4rmeGGfuJuVp4NAKRNLTey6pxhRQmf4`, был сброшен на пустой после предустановки продажи субаккаунтов за 10 000 VIZ (получатель `committee`).
+ - **null** — a specialized account that burns the received tokens. It has empty powers, the mechanism for burning tokens is embedded in the source code of the blockchain.
+ - **committee** — a specialized account that transfers all received tokens to the committee's fund, thus allowing you to donate tokens for the development of the ecosystem. Has empty permissions. It also serves as the initiator of the network, for the anonymous genesis of the blockchain (when the block signing key from the *committee* account is available to everyone in the configuration file). The signature key is formed from the string concatenation of the strings `commitee`, `viz`, `sign`, which corresponds to`5Hw9YPABaFxa2LooiANLrhUK5TPryy8f7v9Y1rk923PuYqbYdfC`. After starting the network and connecting other delegates to it, an anonymous user can stop signing with the `committee ` account and the signature key is reset to the `VIZ111111111111111111111111111114T1Anm` value.
+ - **anonymous** — a specialized account that, when receiving tokens with the specified key (and login, if desired), creates an anonymous account (anonymity is provided by a possible transfer from the gateways of both exchange and social, custody services). Has empty permissions. The format of the `memo`note for registering an anonymous account is `login:public_key`, where `login` is the desired login for the new account, and `public_key` is a single public key for all types of permissions. If the login is not specified, and only `public_key` is specified in the note, an anonymous subaccount of the format `nX.anonymous` is created, where X is the increment of the number specified in the `json_metadata` of the `anonymous`account. **Attention!** If the note is not specified, the funds will be burned in the same way as the transfer to the `null` account.
+ - **invite** — a specialized account for the ability to activate invite codes anonymously, without having an account in the blockchain.  The active key is available to everyone in the configuration file, formed from the string concatenation of the strings `invite`,`viz`,`active`, which corresponds to`5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV6FyFW`. Initially, it does not have any share for making transactions, which can be corrected by delegating or enabling the backup bandwidth system by delegates.
+ - **viz** — the account-initiator of the chain in the genesis block,  the private key `5JabcrvaLnBTCkCVFX5r4rmeGGfuJuVp4NAKRNLTey6pxhRQmf4`, was reset to empty after pre-installing the sale of subaccounts for 10,000 VIZ (the recipient is`committee`).
