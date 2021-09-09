@@ -1,59 +1,59 @@
-# Библиотеки для работы с VIZ
+# Libraries for working with VIZ
 
-Для разработки приложений зачастую используют уже готовые библиотеки. Наличие библиотеки для конкретного языка программирования зависит от наличия заготовок для работы с криптографией, большими числами и траспортными протоколами (http/ws). Так как VIZ исторически эволюционировал из Graphene, то большинство библиотек для таких блокчейн систем, как EOS/Steem/Golos — подходят и для VIZ. Отличительной особенностью является формат общения с нодой (структура json-rpc), порядок и наименование параметров при описании операции, формат сложных данных в бинарном виде (например формат ассетов VIZ и SHARES отличается от нового формата SMT в Steem).
+Ready-made libraries are often used for application development. The availability of a library for a specific programming language depends on the availability of blanks for working with cryptography, large numbers and transport protocols (http/ws). Because VIZ has historically evolved from Graphene, most libraries for such blockchain systems as EOS/Steem/Golos are also suitable for VIZ. A distinctive feature is the format of communication with the node (json-rpc structure),  the order and name of the parameters when describing the operation, the format of complex data in binary form (for example, the format of VIZ and SHARES assets differs from the new SMT format in Steem).
 
-Несмотря на разный синтаксис — основа для взаимодействия с VIZ одна: криптография для ключей и подписи сообщений, проверка подписи по данным и публичному ключу, формирование транзакций, взаимодейстие с нодой.
+Despite the different syntax, the basis for interaction with VIZ is the same: cryptography for keys and message signatures, signature verification using data and a public key, transaction formation, interaction with the node.
 
-Каждый разработчик может поднять свою ноду для взаимодействия с VIZ, но для начинающих разбираться существуют публичные ноды:
+Each developer can raise his own node to interact with VIZ, but there are public nodes for beginners to understand:
 
-Ниже перечислины основные библиотеки VIZ, которые поддерживают большинство API запросов к ноде и формирование транзакций.
+The main VIZ libraries that support most of the node request API and transaction generation are listed below.
 
 ***
 
 ## JavaScript
 
-Фаворит для разработки приложений [библиотека viz-js-lib](https://github.com/VIZ-Blockchain/viz-js-lib). В нем есть поддержка всего что нужно как для серверного (nodejs), так и для пользовательского (js в браузерах) взаимодействия с VIZ:
+The best tool for application development is the [vis-js-lib library](https://github.com/VIZ-Blockchain/vis-js-lib). It has support for everything you need for both server (nodejs) and user (js in browsers) interaction with VIZ:
 
- - Создание и кодирование ключей;
- - API-запросы;
- - Формирование транзакций;
- - Упрощенный конструктор транзакций для операций;
- - Функции обратного вызова для запросов;
+ - Creating and encoding keys;
+ - API requests;
+ - Formation of transactions;
+ - Simplified transaction constructor for operations;
+ - Callback functions for requests;
 
-[Документация viz-js-lib на английском языке](https://github.com/VIZ-Blockchain/viz-js-lib/tree/master/doc) доступна на GitHub. Примеры для часто использумых операций смотрите в [разделе Примеры кода](code-examples.md#viz-js-lib).
+[Viz-js-lib documentation in English](https://github.com/VIZ-Blockchain/viz-js-lib/tree/master/doc) is available on GitHub. For examples of frequently used operations, see [Code examples](code-examples. md#viz-js-lib) section.
 
 ## Python
 
-[Библиотека thallid-viz](https://github.com/ksantoprotein/thallid-viz) от ksantoprotein поддерживает как API запросы, так и формирование транзакций. В наличии [множество примеров](https://github.com/ksantoprotein/thallid-viz/tree/master/examples) с разными операциями.
+The [thallid-viz](https://github.com/ksantoprotein/thallid-viz) library from ksantoprotein supports both API requests and transaction formation. Available [many examples](https://github.com/ksantoprotein/thallid-viz/tree/master/examples) with different operations.
 
-[Библиотека viz-python-lib](https://github.com/VIZ-Blockchain/viz-python-lib) поддерживает большинство необходимого, но отсутствуют примеры и документация (библиотека пока недоделана).
+The [viz-python-lib](https://github.com/VIZ-Blockchain/viz-python-lib) library supports most of the necessary, but there are no examples and documentation (the library is still unfinished).
 
 ## PHP
 
-После перехода на адаптированные библиотеки BigNumber и Elliptic Curve стало доступным использовать криптографию без сборки secp256k1 для PHP и включения поддержки [GMP](https://ru.wikipedia.org/wiki/GNU_Multi-Precision_Library).
+After switching to the adapted BigNumber and Elliptic Curve libraries, it became available to use cryptography without building secp256k1 for PHP and enabling support for [GMP](https://en.wikipedia.org/wiki/GNU_Multiple_Precision_Arithmetic_Library).
 
-[Библиотека viz-php-lib](https://github.com/VIZ-Blockchain/viz-php-lib) поддерживает JsonRPC, работу с ключами, формирование транзакций, шифрование сообщение через shared key (совместимое с viz-js-lib), присутствуют примеры, поддержка PSR-4 и установка без дополнительных зависимостей (all-in-one).
+The [viz-php-lib](https://github.com/VIZ-Blockchain/viz-php-lib) library supports JsonRPC, key handling, transaction generation, message encryption via shared key (compatible with viz-js-lib), there are examples, PSR-4 support and installation without additional dependencies (all-in-one).
 
-[Библиотека php-graphene-node-client с поддержкой VIZ](https://github.com/t3ran13/php-graphene-node-client), установка которого возможна через Composer.
+The [php-graphene-node-client](https://github.com/t3ran13/php-graphene-node-client) library with VIZ support, which can be installed via Composer.
 
 ## GO
 
-[Библиотека viz-go-lib](https://github.com/VIZ-Blockchain/viz-go-lib) отлично подходит для API запросов и изучения формирования транзакций. К сожалению документации по библиотеке нет, как и примеров с отдельными операциями.
+The [viz-go-lib](https://github.com/VIZ-Blockchain/viz-go-lib) library is great for API requests and studying the formation of transactions. Unfortunately, there is no documentation for the library, as well as examples with individual operations.
 
 ## Swift 
 
-[Библиотека viz-swift-lib](https://github.com/VIZ-Blockchain/viz-swift-lib) — библиотека на Swift, установка которой возможна через [Swift Package Manager](https://swiftpackageindex.com/VIZ-Blockchain/viz-swift-lib).
+The [viz-swift-lib](https://github.com/VIZ-Blockchain/viz-swift-lib) library — a library on Swift, which can be installed via [Swift Package Manager](https://swiftpackageindex.com/VIZ-Blockchain/viz-swift-lib).
 
 ## Dart
 
-[Криптографическая библиотека viz_dart_ecc](https://github.com/VizTower/viz_dart_ecc) — позволяет формировать публичный ключ из приватного, подписывать данные, верифицировать подпись.
+The [viz_dart_ecc](https://github.com/VizTower/viz_dart_ecc) cryptographic library — allows you to generate a public key from a private one, sign data, verify the signature.
 
-[Библиотека viz-transaction](https://github.com/VizTower/viz-transaction) — позволяет формировать и подписывать транзакции для блокчейна VIZ (библиотека не содержит методов для трансляции транзакции блокчейн-ноде, для этого нужно использовать любые другие библиотеки для http/ws протокола).
+The [viz-transaction](https://github.com/VizTower/viz-transaction) library — allows you to form and sign transactions for the VIZ blockchain (the library does not contain methods for translating a transaction to the blockchain node, for this you need to use any other libraries for the http/ws protocol).
 
-## Другое
+## Other
 
-Если вы не нашли требуемый язык программирования, то можно обратить внимание на существующие библиотеки для EOS и Steem. Чтобы модифицировать их и получить поддержку VIZ достаточно проверить формат json-rpc запросов, поменять chain_id (в VIZ он равен `2040effda178d4fffff5eab7a915d4019879f5205cc5392e4bcced2b6edda0cd` — это префикс для подписи сырых транзакций) и настроить конструктор операций.
+If you haven't found the required programming language, then you can pay attention to the existing libraries for EOS and Steem. To modify them and get VIZ support, it is enough to check the format of json-rpc requests, change the chain_id (in VIZ, it is equal to`2040effda178d4fffff5eab7a915d4019879f5205cc5392e4bcced2b6edda0cd` — this is the prefix for signing raw transactions) and configure the operation constructor.
 
- - [C# Ditch](https://github.com/Chainers/Ditch) — быстрая и простая библиотека на C# использующая .NET стандарта 2.0;
- - [Elixir API wrapper](https://github.com/metachaos-systems/steemex) — библиотека на Elixir для API-запросов;
- - [viz-php-control-panel](https://github.com/VIZ-Blockchain/viz-php-control-panel) — контрольная панель для VIZ с демо-приложением в виде медиа-платформой на PHP (стоит обратить внимание на [класс для выполнения JSON-RPC запросов viz_jsonrpc.php](https://github.com/VIZ-Blockchain/viz-php-control-panel/blob/master/class/viz_jsonrpc.php)).
+ - [C# Ditch](https://github.com/Chainers/Ditch) — a fast and simple C# library using .NET standard 2.0;
+ - [Elixir API wrapper](https://github.com/metachaos-systems/steemex) — library on Elixir for API requests;
+ - [viz-php-control-panel](https://github.com/VIZ-Blockchain/viz-php-control-panel) — a control panel for VIZ with a demo application in the form of a media platform in PHP (it is worth paying attention to [a class for executing JSON-RPC queries viz_jsonrpc.php](https://github.com/VIZ-Blockchain/viz-php-control-panel/blob/master/class/viz_jsonrpc.php)).
