@@ -14,5 +14,6 @@ Content:
 * [Status (state) of the system](state.md)
 * [Plugins and their API](plugins-api.md)
 * [Libraries to work with the VIZ](libraries.md)
-* [Sample code](code-examples.md)
+* [Code examples](code-examples.md)
 * [Formation of transactions](transaction-formatting.md)
+
