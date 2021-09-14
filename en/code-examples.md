@@ -1,92 +1,92 @@
-# Примеры кода
+# Code examples
 
-Начинающим разработчикам всегда рекомендуется прочесть документации по той или иной библиотеке. Это помогает как понять работу библиотеки, так и запомнить возможности, которые можно использовать при разработке приложений. В данном разделе описаны наиболее популярные запросы в виде примеров. Наиболее используемая библиотека для приложений VIZ — [viz-js-lib](https://github.com/VIZ-Blockchain/viz-js-lib), поэтому примеры будут с её использованием.
+Novice developers are always recommended to read the documentation for a particular library. This helps both to understand how the library works and to remember the features that can be used when developing applications. This section describes the most popular queries in the form of examples.  The most used library for VIZ applications is [viz-js-lib](https://github.com/VIZ-Blockchain/viz-js-lib), so the examples will be with its use.
 
 ***
 
 ## viz-js-lib
 
-Подробная документация на английском с указанием всех методов и их аттрибутов [доступно по ссылке](https://github.com/VIZ-Blockchain/viz-js-lib/tree/master/doc).
+Detailed documentation in English with an indication of all methods and their attributes [available at the link](https://github.com/VIZ-Blockchain/viz-js-lib/tree/master/doc).
 
-### Подключение библиотеки
+### Connecting the library
 
-В зависимости от серверного (nodejs) или браузерного (js) использования библиотеку нужно подключать разными способами.
+Depending on the server (nodejs) or browser (js) usage, the library needs to be connected in different ways.
 
-Для nodejs актуальной инструкцией будет установка библиотеки через `npm install viz-js-lib --save` и подключением её в js файле через `var viz = require('viz-js-lib');`.
+For nodejs, the current instruction is to install the library via`npm install viz-js-lib --save` and connect it in a js file via`var viz = require('viz-js-lib');`.
 
-Для js подключения можно либо самому собрать webpack библиотеки через консоль `npm build`, либо воспользоваться уже собранной библиотекой от [jsDelivr CND](https://cdn.jsdelivr.net/npm/viz-js-lib@latest/dist/viz.min.js) или [Unpkg CDN](https://unpkg.com/viz-js-lib@0.9.21/dist/viz.min.js). Просто добавьте к html файлу тэг script и укажите url библиотеки: `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/viz-js-lib@latest/dist/viz.min.js"></script>`, после чего у вас будет доступ через консоль к глобальной переменной `viz`.
+For js connection, you can either build the webpack libraries yourself via the`npm build`console, or use the already built library from [jsDelivr CND](https://cdn.jsdelivr.net/npm/viz-js-lib@latest/dist/viz.min.js) or [Unpkg CDN](https://unpkg.com/viz-js-lib@0.9.21/dist/viz.min.js). Just add the script tag to the html file and specify the library url: `<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/viz-js-lib@latest/dist/viz.min.js"></script>`after which you will have access to the global variable `viz`via the console.
 
-### Использование публичной ноды
+### Using a public node
 
-Пока у вашего приложения нет большого потока пользователей, разумно использовать доступную публичную ноду. На момент написания статьи в VIZ доступно две публичные ноды:
+As long as your application does not have a large flow of users, it is reasonable to use an available public node. At the time of writing, there are two public nodes available in VIZ:
 
- - Публичная нода от делегата lex: `https://viz.lexa.host/` для JSON-RPC запросов через HTTPS и `wss://viz.lexa.host/ws` для JSON-RPC запросов через WebSocket over SSL;
- - Публичная нода от делегата solox: `https://solox.world/` для JSON-RPC запросов через HTTPS и `wss://solox.world/ws` для JSON-RPC запросов через WebSocket over SSL.
+ - Public node from the lex delegate: `https://viz.lexa.host/` for JSON-RPC requests over HTTPS and `wss://viz.lexa.host/ws` for JSON-RPC requests over WebSocket over SSL;
+ - Public node from the solox delegate: `https://solox.world/` for JSON-RPC requests over HTTPS and `wss://solox.world/ws` for JSON-RPC requests over WebSocket over SSL.
 
-Пример настройки viz для работы с нодой `https://viz.lexa.host/`:
+Example of configuring viz to work with the `https://viz.lexa.host/`node:
 ```js
 var api_gate='https://viz.lexa.host/';
 viz.config.set('websocket',api_gate);
 ```
 
-### API-запросы
+### API-requests
 
-В разделе [Плагины и их API](plugins-api.md) были перечислены основные плагины и запросы к ним — все они доступны в библиотеке viz-js-lib. Для того, чтобы выполнить тот или иной запрос, достаточно перевести его название в [CamelCase](https://ru.wikipedia.org/wiki/CamelCase).
+In the [Plugins and their API](plugins-api.md) section the main plugins and their requests were listed — all of them are available in the viz-js-lib library. In order to execute a particular request, it is enough to translate its name to [camelCase](https://ru.wikipedia.org/wiki/CamelCase).
 
-Например, если вы решили выполнить запрос get_database_info к плагину database_api, то вам необходимо выполнить код:
+For example, if you decide to make a get_database_info request to the database_api plugin, then you need to run the code:
 
 ```js
 viz.api.getDatabaseInfo(function(err,response){
 	if(!err){
-		//получен ответ
+		//response received
 		console.log(response);
 	}
 	else{
-		//ошибка
+		//error
 		console.log(err);
 	}
 });
 ```
 
-В случае, если запрос требует входных данных, то вы добавляете их в начало вызова. Например, для запроса get_active_paid_subscriptions к плагину paid_subscription_api, необходимо указать пользователя, для которого будет произведен поиск активных платных подписок:
+If the request requires input data, then you add them to the beginning of the call. For example, to request get_active_paid_subscriptions to the paid_subscription_api plugin, you must specify the user for whom the search for active paid subscriptions will be performed:
 
 ```js
 var subscriber='on1x';
 viz.api.getActivePaidSubscriptions(subscriber,function(err,response){
 	if(!err){
-		//получен ответ
+		//response received
 		console.log(response);
 	}
 	else{
-		//ошибка
+		//error
 		console.log(err);
 	}
 });
 ```
 
-### Транслирование транзакций (broadcast)
+### Transaction broadcasting
 
-Для каждой операции из протокола VIZ существует отдельный метод в библиотеке viz-js-lib, который принимает приватный ключ (для подписи транзакции) и параметры операции. Название операции, аналогично API методам, должно быть переведено в [формат CamelCase](https://ru.wikipedia.org/wiki/CamelCase). Пример кода для трансляции (broadcast) операции account_metadata (запись в блокчейн мета-данных аккаунта):
+For each operation from the VIZ protocol, there is a separate method in the vis-js-lib library that accepts a private key (for signing the transaction) and operation parameters. The name of the operation, similar to the API methods, should be translated to [CamelCase format](https://en.wikipedia.org/wiki/Camel_case). Sample code for broadcasting the accounts_metadata operation (writing account meta data to the blockchain):
 
 ```js
-var regular_key='5K...';//приватный ключ
-var user_login='test';//логин аккаунта
-var metadata={'name':'Тестовый аккаунт','photo':'https://cdn.pixabay.com/photo/2015/12/06/14/14/tokyo-1079524_960_720.jpg'};
+var regular_key='5K...';//private key
+var user_login='test';//account login
+var metadata={'name':'Test account','photo':'https://cdn.pixabay.com/photo/2015/12/06/14/14/tokyo-1079524_960_720.jpg'};
 viz.broadcast.accountMetadata(regular_key,user_login,JSON.stringify(metadata),function(err,result){
 	if(!err){
-		//транзакция принята публичной нодой
+		//the transaction was accepted by the public node
 		console.log(result);
 	}
 	else{
-		//нода не приняла транзакцию
+		//the node did not accept the transaction
 		console.log(err);
 	}
 });
 ```
 
-### Динамические глобальные свойства сети
+### Dynamic global properties of network
 
-Часть новичков хотят периодически опрашивать ноду и получать актуальные данные о DGP (Dynamic Global Properties), чтобы на основе этого показывать новые блоки, исполнять условия по необратимому блоку или подсвечивать в списке делегатов последнего, кто подписал блок. Для этого достаточно запрашивать данные по таймеру каждые 3 секунды (время между блоками):
+Some newcomers want to periodically send requests to the node and get up-to-date data about DGP (Dynamic Global Properties) in order to show new blocks based on this, fulfill the conditions for an irreversible block, or highlight the last one who signed the block in the list of delegates. To do this, it is enough to request data on the timer every 3 seconds (the time between blocks):
 
 ```js
 var dgp={}
@@ -104,52 +104,52 @@ update_dgp(true);
 
 ```
 
-### Получение информации об аккаунте
+### Getting account information
 
-Пример кода, для получения информации об аккаунте и рассчета актуального значения энергии аккаунта (учитывая скорость её восстановления):
+Sample code for getting information about the account and calculating the current value of the account's energy (taking into account the speed of its recovery):
 
 ```js
 var current_user='on1x';
 viz.api.getAccounts([current_user],function(err,response){
 	if(!err){
-		//получен ответ
+		//response received
 		if(typeof response[0] !== 'undefined'){
-			//мы запросили массив аккаунтов, смотрим нулевой элемент, соответствующий current_user
+			//we have requested an array of accounts, we are looking at the zero element corresponding to current_user
 			let last_vote_time=Date.parse(response[0].last_vote_time);
-			//учитываем временную зону пользователя
+			//we take into account the user's time zone
 			let delta_time=parseInt((new Date().getTime() - last_vote_time + (new Date().getTimezoneOffset()*60000))/1000);
 			let energy=response[0].energy;
-			//рассчитываем востановленную энергию
-			//скорость восстановления энергии от 0% до 100% CHAIN_ENERGY_REGENERATION_SECONDS 5 дней (432000 секунд)
+			//calculating the recovered energy
+			//energy recovery rate from 0% to 100% CHAIN_ENERGY_REGENERATION_SECONDS 5 days (432000 seconds)
 			let new_energy=parseInt(energy+(delta_time*10000/432000));
-			//энергии не может быть больше 100%
+			//the energy can not be more than 100%
 			if(new_energy>10000){
 				new_energy=10000;
 			}
-			console.log('актуальная энергия аккаунта',new_energy);
+			console.log('current energy of account',new_energy);
 		}
 		else{
-			console.log('аккаунт не найден',current_user);
+			console.log('the account was not found',current_user);
 		}
 	}
 	else{
-		//ошибка
+		//error
 		console.log(err);
 	}
 });
 ```
 
-### Работа с ключами
+### Working with keys
 
-Криптографические ключи представляют собой координаты X и Y которые записаны в общепринятом формате DER на эллептической кривой secp256k1 (в качестве хеш-функции служит SHA-256). В библиотеке viz-js-lib преобразования и работа с ключами относятся к модулю `viz.auth`.
+Cryptographic keys are the X and Y coordinates that are written in the generally accepted DER format on the secp256k1 elliptic curve (SHA-256 serves as a hash function). In the viz-js-lib library transformations and working with keys belong to the`viz.auth`module.
 
-В Graphene экосистеме придумали механизм человекочитаемых паролей. По причинам перебора использовать их не рекомендуется, поэтому, чтобы усложнить множественный перебор приватных ключей к публичному пришли к определенным правилам формирования ключей в виде конкатенации строк: логин аккаунта, пароль (сложный), тип доступа.
+The Graphene ecosystem has come up with a mechanism for human-readable passwords. Due to the brute force, it is not recommended to use them, therefore, in order to complicate the multiple search of private keys to the public, we came to certain rules for generating keys in the form of concatenation of strings: account login, password (complex), access type.
 
-Часть приложений условились использовать эти правила, таким образом упрощая доступ пользователем к разным возможностям аккаунта по общему паролю. Например, пользователь test зарегистрирован используя общий пароль PK3452JENDK332. При авторизации в приложении используя эти логин и пароль, приложение может самостоятельно сформировать ключи нужного типа доступа, просто используя конкатенацию строк. Пользователь хочет перевести токены? Приложение формирует налету приватный активный ключ по строке testPK3452JENDK332active. Пользователь награждает кого-то? Приложение формирует приватный регулярный ключ по строке testPK3452JENDK332regular. Это упрощает доступ для пользователя по общему паролю, но лишает гибкости и подвергает опасности аккаунт. Типы доступа имеют разные полномочия и при компрометации доверенного окружения доверенного окружения пользователя или сайта доступ к аккаунту может быть перехвачен. Поэтому часть приложений отказываются от правил или договоренностей ради безопасности пользователей и не поддерживают общий пароль.
+Some applications have agreed to use these rules, thus simplifying the user's access to various account features using a common password. For example, the user with name *test* is registered using the general password PK3452JENDK332. When logging in to the application using this username and password, the application can independently generate the keys of the desired access type, simply using string concatenation. Does the user want to transfer tokens? The application generates a private active key on the fly by the testPK3452JENDK332active line. Is the user rewarding someone? The application generates a private regular key using the string testPK3452JENDK332regular. This makes it easier for the user to access using a shared password, but it deprives the flexibility and puts the account at risk. Access types have different permissions and if the trusted environment of the user's trusted environment or the site is compromised, access to the account can be intercepted. Therefore, some applications abandon the rules or agreements for the sake of user security and do not support a common password.
 
-### Регистрация аккаунта
+### Account registration
 
-Обычно, при регистрации пользователя, приложение генерирует пароль самостоятельно. Но бывает исключения, когда приложение позволяет использовать свой пароль для генерации ключей. Библиотека позволяет самостоятельно указать строки для генерации ключа в методе `viz.auth.toWif(account_login,general_pass,auth_type);`. В примере ниже представлена функция для генерации случайного пароля заданной длины и генерации ключа по нему без привязки к пользователю и типу доступа:
+Usually, when registering a user, the application generates a password on its own. But there are exceptions when the application allows you to use your password to generate keys. The library allows you to independently specify the strings for generating the key in the `viz.auth.toWif(account_login,general_pass,auth_type);`method. The example below shows a function for generating a random password of a given length and generating a key using it without binding to the user and access type:
 
 ```js
 function pass_gen(length=100,to_wif=true){
@@ -166,24 +166,24 @@ function pass_gen(length=100,to_wif=true){
 }
 ```
 
-Получить публичный ключ по заданному приватному можно методом `viz.auth.wifToPublic(wif)`. Для тех приложений, которые хотят формировать ключи по кокатенации логина, пароля и типа доступа, существует метод `viz.auth.getPrivateKeys(account_login,general_pass,auth_types);`. Метод возвращает массив по шаблону result.*type* для приватных ключей (которые нужно передать пользователю) и result.*type*Pubkey для публичных ключей (которые нужно транслировать в блокчейн для сохранения за аккаунтом пользователя). Код функции для регистрации нового аккаунта в VIZ по главному паролю:
+You can get a public key using the specified private key using the `viz.auth.wifToPublic(wif)`method. For those applications that want to generate keys by concatenation of login, password and access type, there is the `viz.auth.getPrivateKeys(account_login,general_pass,auth_types)`method. The method returns an array using the result.*type* template for private keys (to be passed to the user) and result.*type*Pubkey for public keys (which need to be transferred to the blockchain to be saved for the user's account). The function code for registering a new account in VIZ using the main password:
 
 ```js
-var user_login='test';//аккаунт регистратор
-var active_key='5K...';//приватный активный ключ
+var user_login='test';//registrator account
+var active_key='5K...';//private active key
 
 function create_account_with_general_pass(account_login,token_amount,shares_amount,general_pass){
-	let fixed_token_amount=''+parseFloat(token_amount).toFixed(3)+' VIZ';//токены, которые будут переведены в долю новому аккаунту
-	let fixed_shares_amount=''+parseFloat(shares_amount).toFixed(6)+' SHARES';//доля, которая будет делегирована новому аккаунту
+	let fixed_token_amount=''+parseFloat(token_amount).toFixed(3)+' VIZ';//tokens that will be transferred to the share of the new account
+	let fixed_shares_amount=''+parseFloat(shares_amount).toFixed(6)+' SHARES';//the share that will be delegated to the new account
 	if(''==token_amount){
 		fixed_token_amount='0.000 VIZ';
 	}
 	if(''==shares_amount){
 		fixed_shares_amount='0.000000 SHARES';
 	}
-	let auth_types = ['regular','active','master','memo'];//типы доступов
+	let auth_types = ['regular','active','master','memo'];//access types
 	let keys=viz.auth.getPrivateKeys(account_login,general_pass,auth_types);
-	//типы доступов содержат публичные ключи с весом, достаточным для совершения операций
+	//access types contain public keys with a weight sufficient for performing operations
 	let master = {
 		'weight_threshold': 1,
 		'account_auths': [],
@@ -219,21 +219,21 @@ function create_account_with_general_pass(account_login,token_amount,shares_amou
 }
 ```
 
-### Создание ваучера (инвайт-кода)
+### Creating a voucher (invite code)
 
-В блокчейне VIZ есть механика ваучеров. Их может создать кто угодно, переведя в него токены VIZ. Ваучеры можно погасить или использовать в качестве инвайт-кода для упрощенной регистрации нового аккаунта. В первом случае токены поступают на счет аккаунта предъявителя, во втором случае токены конвертируются в долю сети для нового аккаунта (с единым ключом доступа для всех типов доступа).
+There is a voucher mechanism in the VIZ blockchain. Anyone can create them by transferring VIZ tokens to it. Vouchers can be redeemed or used as an invite code for simplified registration of a new account. In the first case, the tokens are transferred to the bearer's account, in the second case, the tokens are converted into a network share for a new account (with a single access key for all access types).
 
-Пример кода для создания ваучера:
+Sample code for creating a voucher:
 
 ```js
 var user_login='test';
-var active_key='5K...';//приватный активный ключ
-var fixed_amount='100.000 VIZ';//количество токенов затраченные на ваучер
-var private_key=pass_gen();//генерируем приватный ключ
-var public_key=viz.auth.wifToPublic(private_key);//получаем публичный ключ из приватного
+var active_key='5K...';//private active key
+var fixed_amount='100.000 VIZ';//the number of tokens spent on the voucher
+var private_key=pass_gen();//generating a private key
+var public_key=viz.auth.wifToPublic(private_key);//getting a public key from a private one
 viz.broadcast.createInvite(active_key,user_login,fixed_amount,public_key,function(err,result){
 	if(!err){
-		console.log('Ваучер создан, публичный ключ для проверки: '+public_key+', приватный ключ для использования: '+private_key);
+		console.log('The voucher has been created, the public key for verification: '+public_key+', private key to use: '+private_key);
 	}
 	else{
 		console.log(err);
@@ -241,18 +241,18 @@ viz.broadcast.createInvite(active_key,user_login,fixed_amount,public_key,functio
 });
 ```
 
-### Регистрация через инвайт-код
+### Registration via an invite code
 
-Для анонимного использования инвайт-кода в системе существует аккаунт `invite` с приватным активным ключом `5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV6FyFW`, пример кода:
+For anonymous use of the invite code, there is an `invite`account in the system with  `5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV6FyFW`private active key, code example:
 
 ```js
-var receiver='newtestaccount';//логин нового аккаунта
-var secret_key='5K...';//приватный ключ инвайт-кода
-var private_key=pass_gen();//генерируем приватный ключ
-var public_key=viz.auth.wifToPublic(private_key);//получаем публичный ключ из приватного
+var receiver='newtestaccount';//new account login
+var secret_key='5K...';//private key of the invite code
+var private_key=pass_gen();//generating a private key
+var public_key=viz.auth.wifToPublic(private_key);//getting a public key from a private one
 viz.broadcast.inviteRegistration('5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV6FyFW','invite',receiver,secret_key,public_key,function(err,result){
 	if(!err){
-		console.log('Аккаунт '+receiver+' зарегистрирован, общий приватный ключ для всех типов доступа: '+private_key);
+		console.log('Account '+receiver+' registered, shared private key for all access types: '+private_key);
 	}
 	else{
 		console.log(err);
@@ -260,17 +260,17 @@ viz.broadcast.inviteRegistration('5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV
 });
 ```
 
-### Погашение ваучера
+### Repayment of the voucher
 
-Для анонимного использования ваучера в системе существует аккаунт `invite` с приватным активным ключом `5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV6FyFW`, пример кода:
+For anonymous use of the voucher, there is`invite`account in the system with a private active key `5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV6FyFW`, code example:
 
 ```js
-var receiver='test';//логин аккаунта
-var secret_key='5K...';//приватный ключ инвайт-кода
-var public_key=viz.auth.wifToPublic(secret_key);//получаем публичный ключ ваучера
+var receiver='test';//account login
+var secret_key='5K...';//private key of the invite code
+var public_key=viz.auth.wifToPublic(secret_key);//getting the public key of the voucher
 viz.broadcast.claimInviteBalance('5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV6FyFW','invite',receiver,secret_key,function(err,result){
 	if(!err){
-		console.log('Аккаунт '+receiver+' успешно погасил ваучер с публичным ключом '+public_key);
+		console.log('Account '+receiver+' successfully redeemed a voucher with a public key '+public_key);
 	}
 	else{
 		console.log(err);
@@ -278,21 +278,21 @@ viz.broadcast.claimInviteBalance('5KcfoRuDfkhrLCxVcE9x51J6KN9aM9fpb78tLrvvFckxVV
 });
 ```
 
-### Конвертация токенов VIZ в долю
+### Converting the VIZ tokens into a share
 
-Для автоматической конвертации всех доступных токенов VIZ в долю сети SHARES необходимо запросить информацию об аккаунте и конвертировать их себе же в долю операцией transfer_to_vesting:
+For automatically converting all available VIZ tokens into a share of the SHARES network, you need to request account information and convert them to your own share using the transfer_to_vesting operation:
 
 ```js
 var current_user='test';
-var active_key='5K...';//приватный активный ключ
+var active_key='5K...';//private active key
 viz.api.getAccounts([current_user],function(err,response){
 	if(!err){
-		//получен ответ
+		//response received
 		if(typeof response[0] !== 'undefined'){
 			if('0.000 VIZ'!=response[0].balance){
 				viz.broadcast.transferToVesting(active_key,current_user,current_user,response[0].balance,function(err,result){
 					if(!err){
-						console.log('конвертация в долю сети',response[0].balance);
+						console.log('convertation to a network share',response[0].balance);
 						console.log(result);
 					}
 					else{
@@ -301,39 +301,39 @@ viz.api.getAccounts([current_user],function(err,response){
 				});
 			}
 			else{
-				console.log('баланс на нуле');
+				console.log('the balance is at zero');
 			}
 		}
 		else{
-			console.log('аккаунт не найден',current_user);
+			console.log('the account was not found',current_user);
 		}
 	}
 	else{
-		//ошибка
+		//error
 		console.log(err);
 	}
 });
 ```
 
-### Конвертация доли в токены VIZ
+### Converting a share into VIZ tokens
 
-Часто новые разработчики сталкиваются с проблемой, что пользователь делегировал часть токенов другому аккаунту и нужно рассчитать доступную долю для конвертации SHARES в VIZ. Пример кода, который автоматически ставит доступные для конвертации SHARES на вывод из доли:
+New developers often face the problem that the user has delegated part of the tokens to another account and they need to calculate the available share for converting SHARES to VIZ. An example of the code that automatically sets the SHARES available for conversion to output from the share:
 
 ```js
 var current_user='test';
-var active_key='5K...';//приватный активный ключ
+var active_key='5K...';//private active key
 viz.api.getAccounts([current_user],function(err,response){
 	if(!err){
-		//получен ответ
+		//response received
 		if(typeof response[0] !== 'undefined'){
 			vesting_shares=parseFloat(response[0].vesting_shares);
 			delegated_vesting_shares=parseFloat(response[0].delegated_vesting_shares);
 			shares=vesting_shares - delegated_vesting_shares;
 			let fixed_shares=''+shares.toFixed(6)+' SHARES';
-			console.log('доступные SHARES для конвертации',fixed_shares);
+			console.log('SHARES available for convertation',fixed_shares);
 			viz.broadcast.withdrawVesting(active_key,current_user,fixed_shares,function(err,result){
 				if(!err){
-					console.log('запуск конвертации доли сети в токены VIZ',fixed_shares);
+					console.log('launching the convertation of the network share into VIZ tokens',fixed_shares);
 					console.log(result);
 				}
 				else{
@@ -342,75 +342,75 @@ viz.api.getAccounts([current_user],function(err,response){
 			});
 		}
 		else{
-			console.log('аккаунт не найден',current_user);
+			console.log('account was not found',current_user);
 		}
 	}
 	else{
-		//ошибка
+		//error
 		console.log(err);
 	}
 });
 ```
 
-### Перевод токенов
+### Tokens transfering
 
-Пример перевода 1.000 VIZ из баланса аккаунта в комитет:
+Example of transferring 1.000 VIZ from the account balance to the committee:
 
 ```js
 var current_user='test';
-var active_key='5K...';//приватный активный ключ
+var active_key='5K...';//private active key
 var target='committee';
 var fixed_amount='1.000 VIZ';
-var memo='Заметка';//utf-8 включая emoji
+var memo='Заметка';//utf-8 including emoji
 viz.broadcast.transfer(active_key,current_user,target,fixed_amount,memo,function(err,result){
 	if(!err){
-		//получен ответ
+		//response received
 		console.log(result);
 	}
 	else{
-		//ошибка
+		//error
 		console.log(err);
 	}
 });
 ```
 
-### Награждение участика сети
+### Awarding of network member
 
-Аккаунт может наградить другого участника сети используя операцию award. Можно указать цель награды target, причину (номер custom_sequence или заметку memo), а также бенефициаров (аккаунты, которые разделят награду цели). Пример:
+An account can award another network member using the award operation. You can specify the purpose of the target award, the reason (the custom_sequence number or memo note), as well as the beneficiaries (accounts that will share the award of target). Example:
 
 ```js
-var current_user='test';//аккаунт награждающего
-var regular_key='5K...';//приватный обычный ключ награждающего
+var current_user='test';//the awarder account
+var regular_key='5K...';//the private regular key of the awarder
 
-var target='viz.plus';//цель награды - заказчик статьи
-var energy='1000';//10.00% будут потрачены из актуальной энергии аккаунта
-var custom_sequence=0;//номер custom операции
-var memo='спасибо за viz cookbook';//utf-8 включая emoji
-var beneficiaries_list=[{"account":"on1x","weight":2000}];//20% автору статьи
+var target='viz.plus';//the award recipient - the customer of the article
+var energy='1000';//10.00% will be spent from the actual energy of the account
+var custom_sequence=0;//the number of the custom operation
+var memo='спасибо за viz cookbook';//utf-8 including emoji
+var beneficiaries_list=[{"account":"on1x","weight":2000}];//20% to the author of the article
 viz.broadcast.award(regular_key,current_user,target,energy,custom_sequence,memo,beneficiaries_list,function(err,result){
 	if(!err){
-		//получен ответ
+		//response received
 		console.log(result);
 	}
 	else{
-		//ошибка
+		//error
 		console.log(err);
 	}
 });
 ```
 
-### Смена ключей аккаунта
+### Changing account keys
 
-Бывает, что есть необходимость сменить доступы у аккаунта. Это может быть по причине добавления нового ключа, делегирование управления или создание условий для мульти-подписного управления аккаунтом (когда для выполнения операций требуется подпись несколькими ключами).
+Sometimes there is a need to change the access rights of the account. This may be due to adding a new key, delegating management, or creating conditions for multi-signature account management (when operations require signing with multiple keys).
 
-Полномочия для выполнения операций имеют следующую структуру:
- - *weight_threshold* — необходимый вес для одобрения транзакции с операциями нужного типа;
- - *account_auths* — массив аккаунтов и их весов. Аккаунты могут добавить вес транзакции при добавлении к ней подписи ключом;
- - *key_auths* — массив публичных ключей и их весов.
+The permissions for performing operations have the following structure:
+ - *weight_threshold* — the required weight for approving a transaction with the necessary type of operations;
+ - *account_auths* — an array of accounts and their weights. Accounts can add the weight of a transaction when adding a signature to it with a key;
+ - *key_auths* — an array of public keys and their weights.
 
-Система проверяет транзакцию, операции в ней, проверяет наличие подписей задейственных аккаунтов и достаточным ли весом они обладают, для совершения действия положенного типа.
+The system checks the transaction, the operations in it, checks for the signatures of the relevant accounts and whether they have enough weight to perform the required type of action.
 
-Пример полномочий с одним ключом:
+Example of permissions with a single key:
 
 ```json
 {
@@ -422,9 +422,9 @@ viz.broadcast.award(regular_key,current_user,target,energy,custom_sequence,memo,
 }
 ```
 
-Если у аккаунта будет записаны эти полномочия в тип доступа regular, то для совершения операции награждения блокчейн будет требовать подпись транзакции ключом `5KRLZitDd5c9uZzDgTMF4se4eVewENtZ29GbCuKwbT3msRbtLgi` (которому соответствует указанный в полномочиях публичный ключ `VIZ6LWhhUzKmYM5VcxtC2FpEjzr71imfb7DeGA9yodeqnvtP2SYjA`).
+If the account has these permissions written to the regular access type, then to perform the award operation, the blockchain will require the signature of the transaction with the key `5KRLZitDd5c9uZzDgTMF4se4eVewENtZ29GbCuKwbT3msRbtLgi`(which corresponds to the public key`VIZ6LWhhUzKmYM5VcxtC2FpEjzr71imfb7DeGA9yodeqnvtP2SYjA`specified in the permissions).
 
-При делегировании управления другому аккаунту, например `test`, необходимо изменить полномочия на:
+When delegating control to another account, for example,`test`, you need to change the permissions to:
 
 ```json
 {
@@ -438,9 +438,9 @@ viz.broadcast.award(regular_key,current_user,target,energy,custom_sequence,memo,
 }
 ```
 
-После этого блокчейн будет требовать подпись либо указанным ключом, либо ключом аналогичного типа доступа аккаунта `test`.
+After that, the blockchain will require a signature either with the specified key, or with a key of a similar type of access to the `test` account.
 
-Мульти-подписное управление предполагает усложнение полномочий, например для управления 2 из 3 можно использовать полномочие:
+Multi-sign management suggest the complication of permissions, for example, to manage 2 out of 3, you can use the permission:
 
 ```json
 {
@@ -454,9 +454,9 @@ viz.broadcast.award(regular_key,current_user,target,energy,custom_sequence,memo,
 }
 ```
 
-Для того чтобы транзакция была принята блокчейном, необходимо добавить подписи как минимум 2 из 3 указанных ключей. В этом примере публичному ключу `VIZ4uiqeDPsoteSFVbTWPBUbmfzxYkJyXYmA6B1pAFWZ59n4iBuUK` соответствует приватный ключ `5KMBKopgd56MZvV8FYhp5AP7AWFyLKiybqRnZYgjXukw34VRE78`.
+In order for the transaction to be accepted by the blockchain, it is necessary to add signatures of at least 2 of the 3 specified keys. In this example, the public key `VIZ4uiqeDPsoteSFVbTWPBUbmfzxYkJyXYmA6B1pAFWZ59n4iBuUK` corresponds to the private key `5KMBKopgd56MZvV8FYhp5AP7AWFyLKiybqRnZYgjXukw34VRE78`.
 
-Рассмотрим пример сброса доступов к аккаунту (смену всех ключей и полномочий):
+Let's consider an example of resetting account access (changing all keys and permissions):
 
 ```js
 //функция требует приватный мастер ключ от аккаунта
@@ -1008,11 +1008,11 @@ var account_login='test';
 var escrow_id=1;
 viz.api.getEscrow(account_login,escrow_id,function(err,response){
 	if(!err){
-		//получен ответ
+		//response received
 		console.log(response);
 	}
 	else{
-		//ошибка
+		//error
 		console.log(err);
 	}
 });
