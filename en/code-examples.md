@@ -459,10 +459,10 @@ In order for the transaction to be accepted by the blockchain, it is necessary t
 Let's consider an example of resetting account access (changing all keys and permissions):
 
 ```js
-//функция требует приватный мастер ключ от аккаунта
+//the function requires a private master key from the account
 function reset_account_with_general_pass(account_login,master_key,general_pass){
 	if(''==general_pass){
-		//если не указан общий пароль, сгенерируем его
+		//if a general password is not specified, we will generate it
 		general_pass=pass_gen(50,false);
 	}
 	let auth_types = ['regular','active','master','memo'];
@@ -505,25 +505,25 @@ function reset_account_with_general_pass(account_login,master_key,general_pass){
 			});
 		}
 		else{
-			console.log("Пользователь не найден");
+			console.log("The user was not found");
 		}
 	});
 }
 ```
 
-### Объявление аккаунта делегатом
+### Declaring an account as a delegate
 
-У каждого делегата есть ключ подписи блоков (`signing_key`), который отвечает за верификацию блокчейном подписи блока. Делегатская нода конфигурируется с приватным ключом подписи (лучше сформировать его заранее), а в блокчейн отправляется публичный ключ, для проверки подписей. В случае если делегат долго отсутствовал блокчейн отметит его как отключенного обнулив ключ подписи. Отключиться можно самостоятельно выставив пустой ключ подписи `VIZ1111111111111111111111111111111114T1Anm`. Пример кода для объявления аккаунта делегатом:
+Each delegate has a block signing key, which is responsible for verifying the block signature by the blockchain. The delegate node is configured with a private signature key (it is better to form it in advance), and a public key is sent to the blockchain to verify signatures. If the delegate has been absent for a long time, the blockchain will mark it as disabled by zeroing the signature key. You can disconnect yourself by setting an empty signature key `viz111111111111111111111111111111111114t1anm`. Sample code for declaring an account as a delegate:
 
 ```js
 var account_login='test';
 var active_key='5K...';
-var url='https://...';//ссылка на заявление о намерении быть делегатом
-var private_key=pass_gen();//генерируем приватный ключ
-var signing_key=viz.auth.wifToPublic(private_key);//публичный ключ
+var url='https://...';//link to the statement of intent to be a delegate 
+var private_key=pass_gen();//generating a private key
+var signing_key=viz.auth.wifToPublic(private_key);//public key
 viz.broadcast.witnessUpdate(active_key,account_login,url,signing_key,function(err,result){
 	if(!err){
-		console.log('Делегат '+account_login+' заявил о желании быть делегатом, приватный ключ подписи блоков: '+private_key);
+		console.log('The delegate '+account_login+' declared a desire to be a delegate, a private key for signing blocks: '+private_key);
 	}
 	else{
 		console.log(err);
@@ -531,15 +531,15 @@ viz.broadcast.witnessUpdate(active_key,account_login,url,signing_key,function(er
 });
 ```
 
-### Голосование за делегата
+### Voting for a delegate
 
-Для того чтобы делегат начал подписывать блоки, у него должен быть не нулевой вес вес голосов. Доля аккаунта при голосовании за нескольких делегатов делится между ними. Пример кода для голосования за делегата:
+In order for a delegate to start signing blocks, he must have a non-zero weight of the weight of votes.  The share of the account when voting for several delegates is divided between them. Sample code for voting for a delegate:
 
 ```js
 var account_login='test';
 var active_key='5K...';
 var witness_login='witness';
-var value=true;//булево значение голоса (true - проголосовать за делегата, false - снять голос)
+var value=true;//boolean value of the voice (true - vote for a delegate, false - remove the vote)
 viz.broadcast.accountWitnessVote(active_key,account_login,witness_login,value,function(err,result){
 	if(!err){
 		console.log(result);
@@ -550,11 +550,11 @@ viz.broadcast.accountWitnessVote(active_key,account_login,witness_login,value,fu
 });
 ```
 
-### Передача права голосования прокси (proxy)
+### Transfer of voting rights to a proxy
 
-Если пользователь не принимает участие в выборе делегатов, он может делегировать право распоряжаться его долей другому аккаунту. Для этого существует операция `account_witness_proxy`, ей может воспользоваться приложение регистратор, чтобы не загружать своего пользователя лишней информацией об устройстве блокчейн-системы и не терять своё влияние (так как для регистрации аккаунта могут затрачиваться токены VIZ, то приложение вкладывает в пользователей потенциал аналогиной доли сети).
+If the user does not participate in the selection of delegates, he can delegate the right to dispose of his share to another account. To do this, there is an `account_witness_proxy` operation, the registrator application can use it in order not to confuse its user with unnecessary information about the device of the blockchain system and not lose its influence (because VIZ tokens can be spent for account registration, the application invests the potential of a similar share of the network in users).
 
-Если пользователь решит самостоятельно участвовать в выборе делегатов, то первый же голос за делегата отменит прокси.
+If the user decides to participate independently in the selection of delegates, the first vote for the delegate will cancel the proxy.
 
 ```js
 var account_login='test';
@@ -570,13 +570,13 @@ viz.broadcast.accountWitnessProxy(active_key,account_login,proxy_login,function(
 });
 ```
 
-### Установка голосуемых параметров сети
+### Setting the voting parameters of the network
 
-Делегаты транслируют свою позицию по голосуемым параметрам сети. Блокчейн система каждый цикл очереди делегатов (21 блок) вычисляет медианные значения голосуемых параметров и фиксирует их на этот цикл. Подробнее про голосуемые параметры сети можно прочесть в разделе [Объекты и структуры в VIZ](object-structures.md). Пример операции `versioned_chain_properties_update` для трансляции делегатом голосуемых параметров сети:
+Delegates broadcast their position on the network's voting parameters. The blockchain system calculates the median values of the voted parameters every cycle of the delegate queue (21 blocks) and fixes them for this cycle. For more information about the network parameters to be voted, see the [Objects and structures in the VIZ](object-structures.md) section. Example of the `ersioned_chain_properties_update` operation for broadcasting the voting parameters of network by a delegate:
 
 ```js
 var account_login='test';
-var active_key='5K...';//приватный активный ключ
+var active_key='5K...';//private active key
 
 var props={};
 props.account_creation_fee='1.000 VIZ';
@@ -585,9 +585,9 @@ props.create_account_delegation_time=2592000 ;
 props.bandwidth_reserve_percent=1;
 props.bandwidth_reserve_below='1.000000 SHARES';
 props.committee_request_approve_min_percent=1000;
-props.flag_energy_additional_cost=1000;//устаревший параметр
-props.min_curation_percent=0;//устаревший параметр
-props.max_curation_percent=10000;//устаревший параметр
+props.flag_energy_additional_cost=1000;//outdated parameter
+props.min_curation_percent=0;//outdated parameter
+props.max_curation_percent=10000;//outdated parameter
 props.min_delegation='1.000 VIZ';
 props.vote_accounting_min_rshares=5000000 ;
 props.maximum_block_size=65536;
@@ -611,16 +611,16 @@ viz.broadcast.versionedChainPropertiesUpdate(active_key,account_login,[2,props],
 });
 ```
 
-### Заявка в комитет
+### Application to the Committee
 
 ```js
 var account_login='test';
-var regular_key='5K...';//приватный регулярный ключ
-var url='https://...';//URL с описанием заявки
-var worker='test';//логин аккаунта, который в случае одобрения будет получать средства их фонда комитета
-var min_amount='0.000 VIZ';//минимальное количество токенов VIZ для удовлетворения заявки
-var max_amount='10000.000 VIZ';//максимальное количество токенов VIZ
-var duration=5*24*3600;//длительность заявки в секундах (должно быть между COMMITTEE_MIN_DURATION (5 дней) и COMMITTEE_MAX_DURATION (30 дней))
+var regular_key='5K...';//private regular key
+var url='https://...';//URL with the application description
+var worker='test';//the login of the account that, if approved, will receive funds from their committee fund
+var min_amount='0.000 VIZ';//the minimum number of VIZ tokens to satisfy the application
+var max_amount='10000.000 VIZ';//maximum number of VIZ tokens
+var duration=5*24*3600;//the duration of the request in seconds (must be between COMMITTEE_MIN_DURATION (5 days) and COMMITTEE_MAX_DURATION (30 days))
 
 viz.broadcast.committeeWorkerCreateRequest(regular_key,account_login,url,worker,min_amount,max_amount,duration,function(err,result){
 	if(!err){
@@ -632,14 +632,14 @@ viz.broadcast.committeeWorkerCreateRequest(regular_key,account_login,url,worker,
 });
 ```
 
-### Отмена заявки в комитете
+### Canceling the application in the Committee
 
-Отменить заявку может только её создатель.
+Only the creator of the application can cancel the application.
 
 ```js
 var account_login='test';
-var regular_key='5K...';//приватный регулярный ключ
-var request_id=14;//номер отменяемой заявки комитета
+var regular_key='5K...';//private regular key
+var request_id=14;//number of the canceled application of the committee
 
 viz.broadcast.committeeWorkerCancelRequest(regular_key,account_login,request_id,function(err,result){
 	if(!err){
@@ -651,15 +651,15 @@ viz.broadcast.committeeWorkerCancelRequest(regular_key,account_login,request_id,
 });
 ```
 
-### Голосование по заявке в комитете
+### Voting on the application in the committee
 
-Проголосовать за заявку может любой участник сети. При завершении время действия заявки происходит расчет удовлетворенной суммы выплаты из комитета учитывающий долю голоса от общего веса проголосовавших и выставленный ими процент согласия с условиями заявки (от -100% до +100%). Если сумма доли сети проголосовавших превышает голосуемый параметр сети `committee_request_approve_min_percent` и расчетная сумма входит в заложенные заявкой рамки, то заявка удовлетворяется комитетом и ставится в очередь на выплаты. Полную механику можно изучить [в файле database.cpp метод committee_processing()](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/chain/database.cpp#L1380). Пример кода с голосованием за заявку:
+Any member of the network can vote for the application. At the end of the application validity period, the satisfied payment amount is calculated from the committee, taking into account the share of votes from the total weight of those who voted and the percentage of agreement with the terms of the application set by them (from -100% to +100%). If the amount of the share of the network of those who voted exceeds the voting parameter`committee_request_approved_min_percent`of the network and the estimated amount is included in the framework laid down by the application, then the application is satisfied by the committee and put in the queue for payments. The whole principle of operation can be explored in the [database.cpp committee_processing() method](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/chain/database.cpp#L1380) file. Sample code with voting for the application:
 
 ```js
 var account_login='test';
-var regular_key='5K...';//приватный регулярный ключ
-var request_id=15;//номер заявки комитета
-var percent=8000;//80% процент от максимальной суммы заявки, на который считает правильным удовлетворить заявку голосующий
+var regular_key='5K...';//private regular key
+var request_id=15;//application number of the committee
+var percent=8000;//80% percentage of the maximum amount of the application, for which the voting person considers it correct to satisfy the application
 viz.broadcast.committeeVoteRequest(regular_key,account_login,request_id,percent,function(err,result){
 	if(!err){
 		console.log(result);
@@ -670,17 +670,17 @@ viz.broadcast.committeeVoteRequest(regular_key,account_login,request_id,percent,
 });
 ```
 
-### Платные подписки
+### Paid subscriptions
 
-Система платных подписок в VIZ позволяет любому аккаунту задать условия соглашения, после подписания которого от подписчика будут перечисляться токены VIZ на баланс провайдера соглашения. Система позволяет изменять условия соглашения провайдеру и автоматически пытается согласовать их в момент экспирации и продления активных подписок без ущерба подписчику. Подписчик может указать единоразово он платит провайдеру по соглашению или согласен автоматически продливать подписку при наличии нужной суммы токенов VIZ на своем балансе. Публикация условий соглашения по платной подписке:
+The system of paid subscriptions in VIZ allows any account to set the terms of the agreement, after signing which VIZ tokens will be transferred from the subscriber to the balance of the agreement provider. The system allows you to change the terms of the agreement to the provider and automatically tries to agree on them at the time of expiration and renewal of active subscriptions without prejudice to the subscriber. The subscriber can specify whether he pays the provider once under the agreement or agrees to automatically renew the subscription if the required amount of VIZ tokens is available on his balance. Publication of the terms of the paid subscription agreement:
 
 ```js
 var account_login='test';
-var active_key='5K...';//приватный активный ключ
-var url='https://...';//URL с описанием платной подписки и соглашения
-var levels=3;//количество уровней платной подписки (провайдер сам решает количество уровней и что будет предоставлять за каждый), если указать 0, то новые подписки не смогут быть оформлены
-var amount='100.000 VIZ';//количество токенов VIZ за каждый уровень платной подписки
-var period=30;//период действия подписки (количество дней)
+var active_key='5K...';//private active key
+var url='https://...';//URL with a description of the paid subscription and agreement
+var levels=3;//the number of paid subscription levels (the provider decides the number of levels and what it will provide for each), if you specify 0, then new subscriptions will not be able to be issued
+var amount='100.000 VIZ';//the number of VIZ tokens for each paid subscription level
+var period=30;//subscription validity period (number of days)
 viz.broadcast.setPaidSubscription(active_key,account_login,url,levels,amount,period,function(err,result){
 	if(!err){
 		console.log(result);
@@ -691,16 +691,16 @@ viz.broadcast.setPaidSubscription(active_key,account_login,url,levels,amount,per
 });
 ```
 
-Аккаунт, желающий заключить соглашение о платной подписке должен подтвердить системе условия соглашения, желаемый уровень подписки и необходимость автоматического продления. Также можно изменить уровень подписки, система автоматически сделает пересчет и либо снимет необходимую сумму, либо продлит время для экспирации соглашения:
+An account wishing to conclude a paid subscription agreement must confirm to the system the terms of the agreement, the desired subscription level and the need for automatic renewal. You can also change the subscription level, the system will automatically recalculate and either withdraw the required amount, or extend the time for the expiration of the agreement:
 
 ```js
 var account_login='subscriber';
-var active_key='5K...';//приватный активный ключ
-var provider_account='test';//логин аккаунта провайдера платной подписки
-var level=2;//желаемый уровень платной подписки
-var amount='100.000 VIZ';//количество токенов VIZ за каждый уровень по соглашению
-var period=30;//период действия подписки по соглашению
-var auto_renewal=true;//необходимость автоматического продления
+var active_key='5K...';//private active key
+var provider_account='test';//login of the paid subscription provider's account
+var level=2;//the desired level of paid subscription
+var amount='100.000 VIZ';//the number of VIZ tokens for each level according to the agreement
+var period=30;//subscription validity period under the agreement
+var auto_renewal=true;//the need for automatic renewal
 viz.broadcast.paidSubscribe(active_key,account_login,provider_account,level,amount,period,auto_renewal,function(err,result){
 	if(!err){
 		console.log(result);
@@ -711,7 +711,7 @@ viz.broadcast.paidSubscribe(active_key,account_login,provider_account,level,amou
 });
 ```
 
-Получить информацию об условиях соглашения по платной подписке:
+Getting information about the terms of the paid subscription agreement:
 
 ```js
 var provider_account='test';
@@ -725,38 +725,38 @@ viz.api.getPaidSubscriptionOptions(provider_account,function(err,response){
 });
 ```
 
-Получить список активных или инактивных платных подписок можно API запросом:
+You can get a list of active or inactive paid subscriptions using an API request:
 
 ```js
 var account_login='subscriber';
 viz.api.getActivePaidSubscriptions(account_login,function(err,response){
 	for(let i in response){
-		console.log('Действует соглашение по платной подписке с аккаунтом '+response[i]);
+		console.log('A paid subscription agreement with the account is valid '+response[i]);
 	}
 }
 viz.api.getInactivePaidSubscriptions(account_login,function(err,response){
 	for(let i in response){
-		console.log('Действует соглашение по платной подписке с аккаунтом '+response[i]);
+		console.log('A paid subscription agreement with the account is valid'+response[i]);
 	}
 }
 ```
 
-Проверить действующее соглашение можно через API запрос:
+You can check the current agreement via an API request:
 
 ```js
 var account_login='subscriber';
 var provider_account='test';
 viz.api.getPaidSubscriptionStatus(account_login,provider_account,function(err,response){
 	if(!err){
-		console.log('Соглашение с аккаунтом '+response.creator);
-		console.log('Статус соглашения: '+(response.active?'активное':'инактивное'));
-		console.log('Автопродление: '+(response.auto_renewal?'включено':'отключено'));
-		console.log('Уровень подписки: '+response.level);
-		console.log('Стоимость уровеня подписки: '+(response.amount/1000)+' VIZ');
-		console.log('Период подписки в днях: '+response.period);
-		console.log('Дата начала соглашения: '+response.start_time);
+		console.log('Agreement with the account '+response.creator);
+		console.log('Status of the agreement: '+(response.active?'active':'inactive'));
+		console.log('Auto-renewal: '+(response.auto_renewal?'enabled':'disabled'));
+		console.log('Subscription level: '+response.level);
+		console.log('The cost of the subscription level: '+(response.amount/1000)+' VIZ');
+		console.log('Subscription period in days: '+response.period);
+		console.log('Agreement start date: '+response.start_time);
 		if(response.active){
-			console.log('Дата экспирации соглашения: '+response.next_time);
+			console.log('Expiration date of the agreement: '+response.next_time);
 		}
 	}
 	else{
@@ -765,24 +765,24 @@ viz.api.getPaidSubscriptionStatus(account_login,provider_account,function(err,re
 });
 ```
 
-### Делегирование доли
+### Delegating a share
 
-В блокчейне VIZ есть возможность делегировать долю (SHARES) другому аккаунту, что позволяет передать управление долей связанное с наградами, голосованием в комитете и получением пропускной способности сети (bandwidth). Делегирование не распространяется на голосование за делегатов, так как там присутствует отдельная операция в виде передачи права голоса всей своей доли операцией `account_witness_proxy`.
+In the VIZ blockchain, it is possible to delegate a share to another account, which allows you to transfer share management related to awards, voting in the committee and obtaining network bandwidth. Delegation does not apply to voting for delegates, since there is a separate operation in the form of transferring the voting right of its entire share by the `account_witness_proxy`operation.
 
-Правила делегирования доли частично прописаны в протоколе сети, частично управляются делегатами:
- - Минимальная сумма делегирования задается делегатами через голосуемый параметр **min_delegation**;
- - Коэффициент наценки делегирования при создании нового аккаунта задается делегатами через голосуемый параметр **create_account_delegation_ratio**;
- - Длительность делегирования (невозможность его отмены) при создании аккаунта задается делегатами через голосуемый параметр **create_account_delegation_time**;
- - Минимальная длительность делегирования заложена в протокол (константа CHAIN_CASHOUT_WINDOW_SECONDS равная одному одному дню);
+The rules for delegating a share are partially prescribed in the network protocol, partially controlled by delegates:
+ - The minimum amount of delegation is set by delegates via the voting parameter **min_delegation**;
+ - The delegation margin coefficient when creating a new account is set by delegates via the voting parameter **create_account_delegation_ratio**;
+ - The duration of delegation (the inability to cancel it) when creating an account is set by delegates via the voted parameter **create_account_delegation_time**;
+ - The minimum duration of delegation is set in the protocol (the CHAIN_CASHOUT_WINDOW_SECONDS constant is equal to one day);
 
-При делегировании срабатывает защитный механизм от абуза двойной траты энергии. Если делегатор передает 50% от своей доли, то энергия будет уменьшена на 50%. Энергия в таком случае может стать отрицательной (до -100%). Стоит учитывать, что операция `delegate_vesting_shares` задает фактическое значение делегированной доли. Если вы захотите отменить делегирование, значит надо задать значение делегированной доли `0.000000 SHARES`. Если вы хотите увеличить делегирование с `1000.000000 SHARES` до `3000.000000 SHARES`, то вам нужно просто задать значение делегирования `3000.000000 SHARES`.
+When delegating, a protective mechanism is triggered against an abusing of double waste of energy. If the delegate transfer 50% of their share, then the energy will be reduced by 50%. In this case, the energy can become negative (up to -100%). It is worth considering that the `delegate_vesting_shares`operation sets the actual value of the delegated share. If you want to cancel delegation, then you need to set the value of the delegated share to `0.000000 SHARES`. If you want to increase the delegation from `1000.000000 SHARES` to`3000.000000 SHARES`, then you just need to set the delegation value to`3000.000000 SHARES`.
 
-Пример кода для делегирования доли другому аккаунту:
+Sample code for delegating a share to another account:
 
 ```js
 var account_login='test';
-var active_key='5K...';//приватный активный ключ
-var delegatee='recipient';//цель делегирования
+var active_key='5K...';//private active key
+var delegatee='recipient';//target of delegation
 var shares='100.000000 SHARES';
 viz.broadcast.delegateVestingShares(active_key,account_login,delegatee,shares,function(err,result){
 	if(!err){
@@ -794,61 +794,61 @@ viz.broadcast.delegateVestingShares(active_key,account_login,delegatee,shares,fu
 });
 ```
 
-Получение информации о делегировании:
+Getting information about delegation:
 
 ```js
 var account_login='test';
 var start_from=0;
 var count=1000;
-var type=0;//0 - исходящее делегирование, 1 - входящее делегирование
+var type=0;//0 - outgoing delegation, 1 - incoming delegation
 viz.api.getVestingDelegations(account_login,start_from,count,type,function(err,response){
 	if(!err){
 		if(0==response.length){
-			console.log('Нет записей о делегированной доле');
+			console.log('There are no records of the delegated share');
 		}
 		for(delegation in response){
-			console.log('Делегировано аккаунту '+response[delegation].delegatee+', '+response[delegation].vesting_shares+', можно отозвать после '+response[delegation].min_delegation_time);
+			console.log('Delegated to the account '+response[delegation].delegatee+', '+response[delegation].vesting_shares+', can be revoked after '+response[delegation].min_delegation_time);
 		}
 	}
 });
 ```
 
-Получение информации о возвращении делегированной доли после отмены делегирования:
+Getting information about the return of the delegated share after the delegation is canceled:
 
 ```js
 var account_login='test';
-var start_from=new Date().toISOString().substr(0,19);//поиск возврата делегированной доли после даты оформленной в формате ISO
+var start_from=new Date().toISOString().substr(0,19);//searching for the return of the delegated share after the date issued in ISO format
 var count=1000;
 viz.api.getExpiringVestingDelegations(account_login,start_from,count,function(err,response){
 	if(!err){
 		if(0==response.length){
-			console.log('Нет записей о возвращаемой делегированной доле');
+			console.log('There are no records of the delegated share being returned');
 		}
 		for(delegation in response){
-			console.log(response[delegation].vesting_shares+' вернется '+response[delegation].expiration);
+			console.log(response[delegation].vesting_shares+' will return '+response[delegation].expiration);
 		}
 	}
 });
 ```
 
-### Custom операции
+### Custom operations
 
-Когда разработчикам нужно ввести свою структуру в блокчейн, сделать децентрализированное приложение (dApp), которое будет мониторить блоки и учитывать операции в сети — они могут использовать custom операции. Custom операция имеет гибкую структуру:
+When developers need to introduce their structure into the blockchain, make a decentralized application (dApp) that will monitor blocks and take into account operations in the network — they can use custom operations. The custom operation has a flexible structure:
 
- - **required_active_auths** — массив аккаунтов, чьи подписи активными ключами должна содержать транзакция;
- - **required_regular_auths** — массив аккаунтов, чьи подписи регулярными ключами должна содержать транзакция;
- - **custom_name** — наименование категории custom операции (разработчики сами решают какое наименование использовать для своего приложения);
- - **custom_json** — любая структура в JSON формате;
+ - **required_active_auths** — an array of accounts, whose signatures with active keys a transaction should contain;
+ - **required_regular_auths** —  an array of accounts, whose signatures with regular keys a transaction should contain;
+ - **custom_name** — the name of the category of custom operations (the developers themselves decide which name to use for their application);
+ - **custom_json** — any structure in JSON format;
 
-Разработчики могут сами придумать структуры данных, протокол команд и их учет через custom операции. Например, это может быть карточная игра, медиа-блоги, комментарии, каталог товаров или работа с рекламными блоками.
+Developers can come up with their own data structures, the protocol of commands and their accounting through custom operations. For example, it can be a card game, media blogs, comments, a product catalog, or working with ad blocks.
 
-Пример использования custom операции:
+Example of using a custom operation:
 
 ```js
 var account_login='test';
 var required_active_auths=[];
 var required_regular_auths=[account_login];
-var private_key='5K...';//приватный ключ нужного типа доступа (в данном случае regular)
+var private_key='5K...';//the private key of the desired access type (in this case, regular)
 var custom_name='file_app';
 var custom_json='{"directory":"/photos/2020/viz_conf/","filename":"moscow_camp.jpg","url":"https://..."}';
 viz.broadcast.custom(private_key,required_active_auths,required_regular_auths,custom_name,custom_json,function(err,result){
@@ -856,47 +856,47 @@ viz.broadcast.custom(private_key,required_active_auths,required_regular_auths,cu
 });
 ```
 
-### Продажа аккаунта
+### Selling an account
 
-Владелец аккаунта может выставить его на продажу используя master доступ:
+The account owner can put it up for sale using master access:
 
 ```js
 var account_login='test';
 var master_key='5K...';
-var seller_login='reseller';//логин аккаунта который получит токены при успешной продаже аккаунта
-var fixed_price_amount='10000.000 VIZ';//цена аккаунта
-var on_sale=true;//выставить аккаунт на продажу (если false, то снять с продажи)
+var seller_login='reseller';//the login of the account that will receive tokens upon successful sale of the account
+var fixed_price_amount='10000.000 VIZ';//account price
+var on_sale=true;//put the account up for sale (if false, then remove it from sale)
 viz.broadcast.setAccountPrice(master_key,account_login,seller_login,fixed_price_amount,on_sale,function(err,result){
 	console.log(err,result);
 });
 ```
 
-Также можно выставить на продажу сабаккаунты (`*.login`):
+You can also put up subaccounts (`*.login`) for sale:
 
 ```js
 var account_login='test';
 var master_key='5K...';
-var seller_login='test';//логин аккаунта который получит токены при успешной продаже аккаунта
-var fixed_price_amount='1000.000 VIZ';//цена сабаккаунта
-var on_sale=true;//выставить сабаккаунты на продажу (если false, то снять с продажи)
+var seller_login='test';//the login of the account that will receive tokens upon successful sale of the account
+var fixed_price_amount='1000.000 VIZ';//subaccount price
+var on_sale=true;//put up subaccounts for sale (if false, then remove them from sale)
 viz.broadcast.setSubaccountPrice(master_key,account_login,seller_login,fixed_price_amount,on_sale,function(err,result){
 	console.log(err,result);
 });
 ```
 
-Купить аккаунт или сабаккаунт можно операцией `buy_account`, система проверит возможность покупки и проведет сделку если это возможно:
+You can buy an account or a subaccount using the`buy_account`' operation, the system will check the possibility of buying and conduct a transaction if possible:
 
 ```js
 var account_login='buyer';
 var active_key='5K...';
-var subaccount_login='enjoy.test';//покупка сабаккаунта у аккаунта test
-var account_offer_price='1000.000 VIZ';//согласованная цена предложения (если цена изменится, блокчейн откажет в операции)
-var private_key=pass_gen();//генерируем приватный ключ
-var public_key=viz.auth.wifToPublic(private_key);//получаем публичный ключ из приватного
-var token_to_shares='5.000 VIZ';//дополнительно потратить токены для конвертации в долю нового аккаунта
+var subaccount_login='enjoy.test';//purchasing of a subaccount from an account named "test"
+var account_offer_price='1000.000 VIZ';//the agreed offer price (if the price changes, the blockchain will refuse the operation)
+var private_key=pass_gen();//generating a private key
+var public_key=viz.auth.wifToPublic(private_key);//getting a public key from a private key
+var token_to_shares='5.000 VIZ';//additionally spending tokens to converting to a share of a new account
 viz.broadcast.buyAccount(active_key,account_login,subaccount_login,account_offer_price,public_key,token_to_shares,function(err,result){
 	if(!err){
-		console.log('Покупка аккаунта '+account_login+' прошла успешно, приватный общий ключ '+private_key);
+		console.log('Buying an account '+account_login+' passed successfully, private shared key is '+private_key);
 		console.log(result);
 	}
 	else{
@@ -905,25 +905,25 @@ viz.broadcast.buyAccount(active_key,account_login,subaccount_login,account_offer
 });
 ```
 
-### Трехсторонние Escrow сделки
+### Three-way Escrow transactions
 
-Трехсторонние сделки работают по принципу проверки выполнения условий гарантом (`agent`). Получатель и гарант должны подтвердить начало сделки операцией `escrow_approve` (гарант получает комиссию на этом этапе), иначе при достижении даты дедлайна ратификации (`ratification_deadline`) происходит возврат всех токенов инициатору сделки ([метод `expire_escrow_ratification` в файле database.cpp](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/chain/database.cpp#L2498)).
+Three-way transactions work on the principle of checking the fulfillment of the conditions by the guarantor (`agent`). The recipient and the guarantor must confirm the start of the transaction with the `escrow_approve`operation (the guarantor receives a commission at this stage), otherwise, when the ratification deadline date (`ratification_deadline`) is reached, all tokens are returned to the initiator of the transaction ([the`expire_escrow_ratification`method in the file database.cpp](https://github.com/VIZ-Blockchain/viz-cpp-node/blob/master/libraries/chain/database.cpp#L2498)).
 
-Если наступает момент спора, то отправитель или получатель могут инициировать разбирательство операцией `escrow_dispute`, после чего принятие решения по сделке передается гаранту (именно он решает кто и сколько токенов получит). Если сделка повисла и долгое время не разрешается — договор истекает (`escrow_expiration`) и всеми токенами управляет либо агент (если был открыт диспут), либо любая из сторон сделки.
+If there is a moment of dispute, the sender or recipient can initiate the proceedings with the operation`escrow_dispute`, after which the decision on the transaction is transferred to the guarantor (it is he who decides who and how many tokens will receive). If the transaction is suspended and is not resolved for a long time — the contract expires (`escrow_expiration`) and all tokens are managed either by an agent (if a dispute was opened), or by any of the sides of the transaction.
 
-Создание escrow перевода:
+Creating an escrow transfer:
 
 ```js
 var account_login='test';
 var active_key='5K...';
 var receiver_login='receiver';
-var token_amount='100.000 VIZ';//количество передаваемых токенов
-var escrow_id=1;//номер escrow назначается вручную для согласования заявки (uint32)
+var token_amount='100.000 VIZ';//number of tokens to be transferred
+var escrow_id=1;//the escrow number, assigned manually for the approval of the application (uint32)
 var agent_login='agent';
-var fee='10.000 VIZ';//комиссия гаранта
-var json_metadata='{}';//дополнительные мета-данные в формате json
-var ratification_deadline=new Date().toISOString().substr(0,19);//дата принудительной окончания сделки и возврата средств если гарант и получатель не подтвердили участие в сделке (дедлайн в формате ISO вида 2019-10-17T13:30:18)
-var escrow_expiration=new Date().toISOString().substr(0,19);//дата окончания принятия решения по сделке, после чего невозможно инициировать спор (дедлайн в формате ISO вида 2019-10-17T13:30:18)
+var fee='10.000 VIZ';//the guarantor's commission
+var json_metadata='{}';//additional metadata in json format
+var ratification_deadline=new Date().toISOString().substr(0,19);//the date of the forced completion of the transaction and the refund of funds if the guarantor and the recipient have not confirmed their participation in the transaction (deadline in the ISO format of the form 2019-10-17T13:30:18)
+var escrow_expiration=new Date().toISOString().substr(0,19);//the deadline for making a decision on the transaction, after which it is impossible to initiate a dispute (deadline in the ISO format of the form 2019-10-17T13:30:18)
 viz.broadcast.escrowTransfer(active_key,account_login,receiver_login,token_amount,escrow_id,agent_login,fee,json_metadata,ratification_deadline,escrow_expiration,function(err,result){
 	if(!err){
 		console.log(result);
@@ -934,18 +934,18 @@ viz.broadcast.escrowTransfer(active_key,account_login,receiver_login,token_amoun
 });
 ```
 
-Подтверждение участие в сделке по предложенным условиям (свое участие должны подтвердить гарант и получатель операцией `escrow_approve`):
+Confirmation of participation in the transaction under the proposed conditions (the guarantor and the recipient must confirm their participation with the`escrow_approve`operation):
 
 ```js
 var account_login='test';
 var receiver_login='receiver';
 var agent_login='agent';
-var escrow_id=1;//номер escrow назначается вручную для согласования заявки (uint32)
+var escrow_id=1;//the escrow number is assigned manually for the approval of the application (uint32)
 
-var who=agent_login;//кто подтверждает свое участие
-var active_key='5K...';//ключ подтверждающий стороны (who)
+var who=agent_login;//who confirms their participation
+var active_key='5K...';//the key confirming the sides (who)
 
-var approve=true;//false в случае отказа от участия в сделке
+var approve=true;//false in case of refusal to participate in the transaction
 viz.broadcast.escrowApprove(active_key,account_login,receiver_login,agent_login,who,escrow_id,approve,function(err,result){
 	if(!err){
 		console.log(result);
@@ -956,17 +956,17 @@ viz.broadcast.escrowApprove(active_key,account_login,receiver_login,agent_login,
 });
 ```
 
-Требование диспута (открыть спор по сделке может отправитель или получатель операцией `escrow_dispute`):
+Dispute request (the sender or recipient can open a dispute on a transaction using the`escrow_dispute`operation):
 
 ```js
 var account_login='test';
 var receiver_login='receiver';
 var agent_login='agent';
-var escrow_id=1;//номер escrow назначается вручную для согласования заявки (uint32)
+var escrow_id=1;//the escrow number is assigned manually for the approval of the application (uint32)
 
 
-var who=receiver_login;//кто подтверждает свое участие
-var active_key='5K...';//ключ подтверждающий стороны (who)
+var who=receiver_login;//who confirms their participation
+var active_key='5K...';//the key confirming the sides (who)
 
 viz.broadcast.escrowDispute(active_key,account_login,receiver_login,agent_login,who,escrow_id,function(err,result){
 	if(!err){
@@ -978,18 +978,18 @@ viz.broadcast.escrowDispute(active_key,account_login,receiver_login,agent_login,
 });
 ```
 
-Отпустить средства (операция `escrow_release`):
+Releasing funds (`escrow_release`operation):
 
 ```js
 var account_login='test';
 var receiver_login='receiver';
 var agent_login='agent';
-var escrow_id=1;//номер escrow назначается вручную для согласования заявки (uint32)
-var token_amount='100.000 VIZ';//количество передаваемых токенов
+var escrow_id=1;//the escrow number is assigned manually for the approval of the application (uint32)
+var token_amount='100.000 VIZ';//number of tokens to be transferred
 
-var who=receiver_login;//кто решил отпустить средства (если открыт диспут, то только гарант решает кому и сколько перевести)
-var active_key='5K...';//ключ инициатора операции (who)
-var receiver=account_login;//получателем средств может быть только другая сторона сделки до истечения срока сделки, иначе — любая из сторон сделки
+var who=receiver_login;//who decided to release the funds (if a dispute is open, then only the guarantor decides to whom and how much to transfer)
+var active_key='5K...';//key of the initiator of the operation (who)
+var receiver=account_login;//the recipient of funds can only be the other side of the transaction before the expiration of the transaction, otherwise-any of the sides of the transaction
 
 viz.broadcast.escrowRelease(active_key,account_login,receiver_login,agent_login,who,receiver,escrow_id,token_amount,function(err,result){
 	if(!err){
@@ -1001,7 +1001,7 @@ viz.broadcast.escrowRelease(active_key,account_login,receiver_login,agent_login,
 });
 ```
 
-Чтобы получить информацию об escrow, необходимо вызвать API запрос `get_escrow` плагина `database_api`:
+To get information about escrow, you need to call the`get_escrow `API request of the`database_api` plugin:
 
 ```js
 var account_login='test';
@@ -1018,17 +1018,17 @@ viz.api.getEscrow(account_login,escrow_id,function(err,response){
 });
 ```
 
-### Восстановление аккаунта
+### Account restoration
 
-При создании аккаунта создатель записывается в поле аккаунта `recovery` как доверенное лицо для восстановления доступа к аккаунта, в случае его взлома и смены ключей доступа. Блокчейн ведет записи по смене мастер полномочий и хранит их 30 дней. Именно в этот период в 30 дней доверенный аккаунт может создать запрос на восстановление доступа операцией `request_account_recovery`:
+When creating an account, the creator is recorded in the `recovery`account field as a trusted person to restore access to the account, in case of its hacking and change of access keys. The blockchain keeps records of the change of master powers and stores them for 30 days. It is during this period of 30 days that a trusted account can create a request to restore access with the`request_account_recovery`operation:
 
 ```js
 var recovery_account='escrow';
 var active_key='5K...';
 
 var account_to_recover='test';
-var private_key=pass_gen();//генерируем приватный ключ (передаем владельцу аккаунта или согласовываем с ним публичный ключ для мастер полномочий)
-var public_key=viz.auth.wifToPublic(private_key);//получаем публичный ключ из приватного
+var private_key=pass_gen();//we generate a private key (we transfer the account owner or agree with him the public key for master permissions) 
+var public_key=viz.auth.wifToPublic(private_key);//getting a public key from a private one
 
 var new_master_authority={
 	'weight_threshold': 1,
@@ -1036,38 +1036,38 @@ var new_master_authority={
 	'key_auths': [
 		[public_key, 1]
 	]
-};//новые мастер полномочия
-var extensions=[];//дополнительное поле, не используется
+};//new master permissions
+var extensions=[];//additional field, not used
 viz.broadcast.requestAccountRecovery(active_key,recovery_account,account_to_recover,new_master_authority,extensions,function(err,result) {
 	console.log(err,result);
 });
 ```
 
-После того как запрос на смену доступов создан его должен подтвердить аккаунт операцией `recover_account`. Важный момент заключается в том, что транзакцию надо подписать сразу двумя ключами — старым и новым из заявки от доверительного аккаунта, поэтому нужно сформировать транзакцию используя `viz.broadcast.send`:
+After the request for changing access is created, the account must confirm it with the`recovery_account`operation. An important point is that the transaction must be signed with two keys at once — the old and the new one from the application from the trust account, so you need to form a transaction using`viz.broadcast.send`:
 
 ```js
 var account_login='test';
 
-var new_master_key='5K...';//новый приватный мастер ключ
-var new_master_public_key=viz.auth.wifToPublic(new_master_key);//публичный ключ из приватного мастер ключа (согласован с доверенным аккаунтом)
+var new_master_key='5K...';//new private master key
+var new_master_public_key=viz.auth.wifToPublic(new_master_key);//public key from the private master key (agreed with trusted account)
 var new_master_authority={
 	'weight_threshold': 1,
 	'account_auths': [],
 	'key_auths': [
 		[new_master_public_key, 1]
 	]
-};//новые мастер полномочия
+};//new master permissions
 
-var recent_master_key='5K...';//старый приватный мастер ключ для доказательства идентификации
-var recent_master_public_key=viz.auth.wifToPublic(recent_master_key);//старый публичный мастер ключ
+var recent_master_key='5K...';//old private master key for proof of identification
+var recent_master_public_key=viz.auth.wifToPublic(recent_master_key);//old public master key
 var recent_master_authority={
 	'weight_threshold': 1,
 	'account_auths': [],
 	'key_auths': [
 		[recent_master_public_key, 1]
 	]
-};//старые мастер полномочия как доказательство идентификации
-var extensions=[];//дополнительное поле, не используется
+};//old master credentials as proof of identification
+var extensions=[];//additional field, not used
 
 var operations=['recover_account',['account_to_recover':account_login,'new_master_authority':new_master_authority,'recent_master_authority':recent_master_authority,'extensions':extensions]];
 
@@ -1078,39 +1078,39 @@ viz.broadcast.send(tx,[recent_master_key,new_master_key],function(err,result) {
 });
 ```
 
-Поменять доверенный аккаунт для восстановления доступа можно операцией `change_recovery_account`, изменения вступят через 30 дней (чтобы исключить абуз):
+To change a trusted account to restore access, you can use the`change_recovery_account` operation, the changes will take effect in 30 days (to exclude abuse):
 
 ```js
 var account_login='test';
-var master_key='5K...';//мастер ключ
-var new_recovery_account='escrow';//новый доверенный аккаунт
-var extensions=[];//дополнительное поле, не используется
+var master_key='5K...';//master key
+var new_recovery_account='escrow';//new trusted account
+var extensions=[];//additional field, not used
 viz.broadcast.changeRecoveryAccount(master_key,account_login,new_recovery_account,extensions,function(err,result) {
 	console.log(err,result);
 });
 ```
 
-### Система предложенных операций (proposal)
+### The system of proposed operations
 
-Для управления системой предложенных операций существует 3 операции: создания предложения, предоставление подписи (обновление), удаление предложения. После создания предложения блокчейн система будет ожидать все необходимые подписи для осуществления операций заложенных внутрь предложения, после чего выполнит их. Если подошел срок истечения, то предложение не будет выполнено. Системой предложенных операций пользуются для управления мультиподписными аккаунтами. Для создания предложения используйте операцию `proposal_create`:
+To manage the system of proposed operations, there are 3 operations: creating an offer, providing a signature (updating), deleting an offer. After creating the offer, the blockchain system will wait for all the necessary signatures to perform the operations embedded inside the offer, after which it will execute them. If the expiration date has come, the offer will not be fulfilled. The system of proposed operations is used to manage multi-subscription accounts. To create an offer, use the`proposal_create`operation:
 
 ```js
 var account_login='test';
-var active_key='5K...';//активный приватный ключ
-var title='payments-14';//наименование предложения (играет роль идентификатора, должно быть уникальным)
+var active_key='5K...';//active private key
+var title='payments-14';//the name of the offer (plays the role of an identifier, must be unique)
 var memo='Платежи по договору №14';
 
-var expiration_date=new Date();//дата экспирации, когда предложенные операции будут отклонены или выполнены при получении всех необходимых подписей
-expiration_date.setDate(expiration_date.getDate() + 10);//плюс десять дней от текущего момента
-var expiration_time=expiration_date.toISOString().substr(0,19);//дата истечения предложения в формате ISO
+var expiration_date=new Date();//expiration date when the proposed operations will be rejected or executed upon receipt of all necessary signatures
+expiration_date.setDate(expiration_date.getDate() + 10);//plus ten days from the current moment
+var expiration_time=expiration_date.toISOString().substr(0,19);//the expiration date of the offer in ISO format
 console.log('expiration_time',expiration_time);
 
 var proposed_operations=[];
 proposed_operations.push({'op':['transfer',{'from':'escrow','to':'test','amount':'10.000 VIZ','memo':memo}]});
 proposed_operations.push({'op':['transfer',{'from':'escrow2','to':'test','amount':'10.000 VIZ','memo':memo}]});
 
-var review_period_date=new Date(expiration_date.getTime() - 10);//дата прекращения приема подписей (минус 10 секунд до даты экспирации)
-var review_period_time=review_period_date.toISOString().substr(0,19);//дата истечения предложения в формате ISO
+var review_period_date=new Date(expiration_date.getTime() - 10);//signature acceptance termination date (minus 10 seconds before expiration date)
+var review_period_time=review_period_date.toISOString().substr(0,19);//the expiration date of the offer in ISO format
 console.log('review_period_time',review_period_time);
 
 var extensions=[];
@@ -1120,7 +1120,7 @@ viz.broadcast.proposalCreate(active_key,account_login,title,memo,expiration_time
 });
 ```
 
-Чтобы получить информацию о предложениях сделанных пользователем, нужно выполнить API запрос `get_proposed_transactions` к плагину `database_api` (будет возвращен массив предложений):
+To get information about the offers made by the user, you need to execute the`get_proposed_transactions`API request to the`database_api`plugin (an array of offers will be returned):
 
 ```js
 var looking_account='test';
@@ -1131,17 +1131,17 @@ viz.api.getProposedTransactions(looking_account,from,limit,function(err,response
 });
 ```
 
-Система предложений поддерживает все существующие операции в блокчейне, но не позволяет смешивать операции требующие разных полномочий (например, операции `tranfer`, требующие active полномочия, и операции `award`, требующие regular полномочия). Предоставить подпись нужного типа доступа можно операцией `proposal_update` указав логин подписавшего транзакцию в массиве на добавление или удаления из списка подтвердивших предложение (для этого есть 4 типа массивов: active, master, regular и key для использования одиночных ключей). Как только предоставлены все необходимые подписи — операции из предложения будут исполнены (при условии, что не указан период `review_period_time`), в случае ошибки выполнения повторная попытка будет предпринята при экспирации. Пример:
+The offer system supports all existing operations in the blockchain, but does not allow mixing operations that require different permissions (for example, `tranfer`operations that require active permissions, and`award`operations that require regular permissions). To provide a signature of the desired access type, you can use the`proposal_update`operation by specifying the login of the signatory of the transaction in the array to add or remove from the list of those who confirmed the offer (there are 4 types of arrays for this: active, master, regular and key for using single keys). As soon as all the necessary signatures are provided, the operations from the offer will be executed (provided that the `review_period_time`period is not specified). In case of an execution error, a second attempt will be made at expiration. Example:
 
 ```js
 var account_login='escrow';
-var active_key='5K...';//активный приватный ключ
+var active_key='5K...';//active private key
 
-var proposal_author='test';//автор предложения
-var proposal_title='payments-14';//идентификатор предложения
+var proposal_author='test';//the author of the offer
+var proposal_title='payments-14';//offer ID
 
-var active_approvals_to_add=[];//список аккаунтов подписавших данную транзакцию активным типом доступа для подтверждения предложения
-var active_approvals_to_remove=[];//список аккаунтов для удаления из списка подтвердивших предложение
+var active_approvals_to_add=[];//the list of accounts that signed this transaction with the active access type for confirming the offer
+var active_approvals_to_remove=[];//list of accounts to delete from the list of those who confirmed the offer
 var master_approvals_to_add=[];
 var master_approvals_to_remove=[];
 var regular_approvals_to_add=[];
@@ -1157,14 +1157,14 @@ viz.broadcast.proposalUpdate(active_key,proposal_author,proposal_title,active_ap
 });
 ```
 
-Предложение может удалить заявитель или любой участник, чья подпись требуется. Для этого достаточно выполнить операцию `proposal_delete` подписав её активным ключом:
+The proposal can be deleted by the applicant or any participant whose signature is required. To do this, it is enough to perform the`proposal_delete`operation by signing it with the active key:
 
 ```js
-var account_login='escrow2';//участник предложения
-var active_key='5K...';//активный приватный ключ
+var account_login='escrow2';//participant of the offer
+var active_key='5K...';//active private key
 
-var proposal_author='test';//автор предложения
-var proposal_title='payments-14';//идентификатор предложения
+var proposal_author='test';//the author of the offer
+var proposal_title='payments-14';//offer ID
 
 var extensions=[];
 
@@ -1173,23 +1173,23 @@ viz.broadcast.proposalDelete(active_key,proposal_author,proposal_title,account_l
 });
 ```
 
-Пример реализации отложенной операции награды созданной тем же аккаунтом в одной транзакции и подписавший транзакцию активным и регулярным ключом:
+An example of the implementation of a deferred reward operation created by the same account in the same transaction and signed the transaction with an active and regular key:
 
 ```js
-var expiration_date=new Date(new Date().getTime() + 20000);//+20 секунд от текущего момента
-var expiration_time=expiration_date.toISOString().substr(0,19);//дата истечения предложения в формате ISO
-var review_period_date=new Date(expiration_date.getTime() - 10000);//дата прекращения приема подписей (минус 10 секунд от даты экспирации)
-var review_period_time=review_period_date.toISOString().substr(0,19);//дата истечения предложения в формате ISO
+var expiration_date=new Date(new Date().getTime() + 20000);//+20 seconds from the current moment
+var expiration_time=expiration_date.toISOString().substr(0,19);//the expiration date of the offer in ISO format
+var review_period_date=new Date(expiration_date.getTime() - 10000);//signature acceptance termination date (minus 10 seconds from the expiration date)
+var review_period_time=review_period_date.toISOString().substr(0,19);//the expiration date of the offer in ISO format
 
 var login='test';
 var active_wif='5K...';
 var regular_wif='5J...';
 
-var target='committee';//цель операции награждения
+var target='committee';//the target of the award operation
 var energy=200;//2%
 var memo='отложенного награждения через proposal';
 
-var regular_public_wif = viz.auth.wifToPublic(regular_wif);//для добавление в key_approvals_to_add через операцию proposal_update
+var regular_public_wif = viz.auth.wifToPublic(regular_wif);//to add to key_approvals_to_add via the proposal_update operation
 
 const operations = [
 ["proposal_create",{
@@ -1222,9 +1222,9 @@ viz.broadcast.send({extensions:[],operations},[active_wif,regular_wif],function(
 });
 ```
 
-## Подпись данных с помощью приватного ключа и проверка подписи с помощью публичного
+## Signing data with a private key and verifying the signature with a public key
 
-Чтобы подписать данные приватным ключом (метод `viz.auth.signature.sign`, для поиска каноничной подписи необходимо добавить nonce, который будет находиться в данных на подпись) и проверить подпись публичным ключом (метод `viz.auth.signature.verifyData`), можно воспользоваться стандартными методами `viz-js-lib`:
+To sign data with a private key (the`viz.auth.signature.sign`method, to search for a canonical signature, you need to add a nonce that will be in the data for signature) and verify the signature with a public key (the`viz.auth.signature.verifyData` method), you can use the standard`viz-js-lib`methods:
 
 ```js
 var private_key='5KRLZitDd5c9uZzDgTMF4se4eVewENtZ29GbCuKwbT3msRbtLgi';
@@ -1237,7 +1237,7 @@ var nonce=0;
 var data_with_nonce='';
 var signature='';
 
-function auth_signature_check(hex){//проверка на каноничность подписи
+function auth_signature_check(hex){//checking for the canonicity of the signature
 	if('1f'==hex.substring(0,2)){
 		return true;
 	}
@@ -1257,11 +1257,12 @@ console.log('check by public_key',viz.auth.signature.verifyData(data_with_nonce,
 console.log('check by invalid_public_key',viz.auth.signature.verifyData(data_with_nonce,viz.auth.signature.fromHex(signature),invalid_public_key));
 ```
 
-## js запросы к публичной ноде VIZ без библиотеки
+## js requests to a VIZ public node without a library
 
-Если вашему приложению не требуется криптография и подпись транзакций, то вы можете использовать нативные средства для json-rpc запросов через js.
+If your application does not require cryptography and transaction signing, then you can use native tools for json-rpc requests via js.
 
-Пример для WebSocket соединения:
+Example for a WebSocket connection:
+
 ```js
 var api_gate='wss://solox.world/ws';
 var latency_start=new Date().getTime();
@@ -1283,7 +1284,7 @@ socket.onopen=function(){
 };
 ```
 
-Пример для HTTP соединения:
+Example for an HTTP connection:
 ```js
 var api_gate='https://viz.lexa.host/';
 var latency_start=new Date().getTime();
